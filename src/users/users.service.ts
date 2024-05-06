@@ -15,8 +15,10 @@ export class UsersService {
     return await this.userRepository.save(createUserDto);
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll() {
+    return await this.userRepository.find({
+      select: ['userId', 'userName', 'userLastName', 'userEmail', 'image']
+    });
   }
 
   async findOneByEmail(email: string) {
@@ -24,6 +26,25 @@ export class UsersService {
       where:{
         userEmail: email
       }});
+  }
+
+
+  async findEmailWithPassword(userEmail: string){
+    return await this.userRepository.findOne({
+      where:{
+        userEmail: userEmail
+      },
+      select:['userId', 'userName', 'userLastName','userEmail','userPassword']
+    });
+  }
+
+  async profile(user): Promise<User>{
+    return await this.userRepository.findOne({
+      where:{
+        userId: user.userId
+      },
+      select:['userId', 'userName', 'userLastName','userEmail', 'image']
+    });
   }
 
   findOne(id: number) {

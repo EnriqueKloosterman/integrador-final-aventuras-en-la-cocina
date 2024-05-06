@@ -27,7 +27,9 @@ import { CloudinaryProvider } from 'cloudinary/cloudinary.provider';
     RecipesModule, 
     CommentsModule, 
     ArticlesModule, 
-    CategoriesModule, TagModule, AuthModule],
+    CategoriesModule,
+    TagModule, 
+    AuthModule],
   controllers: [],
   providers: [CloudinaryProvider],
 })

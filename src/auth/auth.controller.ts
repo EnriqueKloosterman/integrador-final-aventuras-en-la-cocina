@@ -6,6 +6,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CustomUploadFileTypeValidator } from 'src/constants/file-upload.validator';
 import { CONSTANTS } from 'src/constants/constants';
 import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -36,6 +37,12 @@ export class AuthController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
     }
   }
+
+  @Post('login')
+  login(@Body() loginDto: LoginDto){
+    return this.authService.login(loginDto)
+  }
+
 
   @Get()
   findAll() {

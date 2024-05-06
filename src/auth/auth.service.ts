@@ -6,12 +6,14 @@ import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
 import { User } from 'src/users/entities/user.entity';
 import * as bcryptjs from 'bcryptjs';
+import { JwtService } from '@nestjs/jwt';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
-    // private readonly jwtService: JwtService,
+    private readonly jwtService: JwtService
   ){}
   async handleUpload(image: Express.Multer.File, createAuthDto: CreateAuthDto): Promise<CloudinaryResponse> {
     return new Promise<CloudinaryResponse>((resolve, reject) => {
@@ -51,12 +53,45 @@ export class AuthService {
     newUser.userEmail = userEmail;
     newUser.userPassword = await bcryptjs.hash(userPassword, 10);
     newUser.image = imageUrl;
-    
+
     try {
       await this.usersService.register(newUser);
     } catch (error) {
       throw new Error('user creation failed');
       
+    }
+    return {
+      userName,
+      userLastName,
+      userEmail,
+      imageUrl
+    }
+  }
+
+  async login({userEmail, userPassword}: LoginDto){
+    const user = await this.usersService.findOneByEmail(userEmail);
+    if(!user){
+      throw new BadRequestException('User not found');
+    }
+    const isPasswordValid = await bcryptjs.compare(userPassword, user.userPassword);
+    if(!isPasswordValid){
+      throw new BadRequestException('Invalid password');
+    }
+    const payload = {
+      userName: user.userName,
+      userLastName: user.userLastName,
+      userEmail: user.userEmail,
+      image: user.image,
+      role: user.user_role
+    }
+    const token = await this.jwtService.signAsync(payload);
+
+    return {
+      token: token,
+      userName: user.userName,
+      userLastName: user.userLastName,
+      image: user.image,
+      userEmail: user.userEmail,
     }
   }
 
