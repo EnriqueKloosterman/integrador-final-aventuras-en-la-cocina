@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe, HttpException, HttpStatus } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -7,28 +7,63 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
-  @Post()
-  create(@Body() createCategoryDto: CreateCategoryDto) {
+  @Post('register-category')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async create(@Body() createCategoryDto: CreateCategoryDto): Promise<CreateCategoryDto> {
     return this.categoriesService.create(createCategoryDto);
   }
 
-  @Get()
-  findAll() {
-    return this.categoriesService.findAll();
+  @Get('categories')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async findAll(): Promise<CreateCategoryDto[]> {
+    try {
+      const categories = await this.categoriesService.findAllCategories();
+      if(categories.length){
+        return categories
+      }
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
+    }
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.categoriesService.findOne(+id);
+  @Get('category/:id')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async findOne(@Param('id') id: string): Promise<CreateCategoryDto> {
+    try {
+      const category = await this.categoriesService.findOneCategory(+id);
+      if(!category){
+        throw new HttpException('Category not found', HttpStatus.NOT_FOUND)
+      }
+      return category
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.NOT_FOUND)
+    }
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
-    return this.categoriesService.update(+id, updateCategoryDto);
+  @Patch('update/category/:id')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto): Promise<UpdateCategoryDto> {
+    try {
+      const category = await this.categoriesService.findOneCategory(+id);
+      if(!category){
+        throw new HttpException('Category not found', HttpStatus.NOT_FOUND)
+      }
+      return this.categoriesService.update(+id, updateCategoryDto);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST)  
+    }
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.categoriesService.remove(+id);
+  @Delete('remove/category/:id')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async remove(@Param('id') id: string) {
+    try {
+      const category = await this.categoriesService.findOneCategory(+id);
+      if(category){
+        return this.categoriesService.remove(+id);
+      }
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
+    }
   }
 }
