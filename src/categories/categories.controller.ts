@@ -1,17 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
 
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
-  @Post('register-category')
-  @UsePipes(new ValidationPipe({ transform: true }))
-  async create(@Body() createCategoryDto: CreateCategoryDto): Promise<CreateCategoryDto> {
-    return this.categoriesService.create(createCategoryDto);
+@Post('register/category')
+@UsePipes(new ValidationPipe({ transform: true }))
+async create(@Body() createCategoryDto: CreateCategoryDto): Promise<CreateCategoryDto> {
+  try {
+    return await this.categoriesService.create(createCategoryDto);
+  } catch (error) {
+    throw new HttpException('Error creating category', HttpStatus.INTERNAL_SERVER_ERROR);
   }
+}
+
 
   @Get('categories')
   @UsePipes(new ValidationPipe({ transform: true }))
@@ -55,12 +61,13 @@ export class CategoriesController {
   }
 
   @Delete('remove/category/:id')
+  @UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe({ transform: true }))
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string): Promise<void> {
     try {
       const category = await this.categoriesService.findOneCategory(+id);
       if(category){
-        return this.categoriesService.remove(+id);
+        await this.categoriesService.remove(+id);
       }
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST)

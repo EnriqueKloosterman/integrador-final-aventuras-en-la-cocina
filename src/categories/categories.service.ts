@@ -34,7 +34,7 @@ export class CategoriesService {
       if(!categories){
         throw new BadRequestException('No categories found');
       }
-      return await this.categoryRepository.find();
+      return categories
       } catch (error) {
         throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
       }
