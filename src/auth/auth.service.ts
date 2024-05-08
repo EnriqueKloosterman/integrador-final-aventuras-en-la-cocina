@@ -23,7 +23,7 @@ export class AuthService {
           if(result && result.url){
             console.log('image uploaded succesfully. URL: ', result.url);
             this.register(createAuthDto.userName, createAuthDto.userLastName, createAuthDto.userEmail, createAuthDto.userPassword, result.url)
-            .then((user) => {
+            .then(() => {
               resolve(result)
             })
             .catch((error) => {

@@ -1,10 +1,10 @@
 import { Tag } from "src/tag/entities/tag.entity";
 import { User } from "src/users/entities/user.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Article {
-    @PrimaryColumn('uuid')
+    @PrimaryGeneratedColumn('uuid')
     articleId: string;
 
     @Column({type: 'varchar', length:150, nullable: false})
@@ -28,7 +28,7 @@ export class Article {
         name: 'tagId', 
         referencedColumnName: 'tagId' 
     })
-    tag: Tag[];
+    tag: Tag;
 
     @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date;
