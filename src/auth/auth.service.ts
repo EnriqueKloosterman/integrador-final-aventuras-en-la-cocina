@@ -78,6 +78,7 @@ export class AuthService {
       throw new BadRequestException('Invalid password');
     }
     const payload = {
+      userId: user.userId,
       userName: user.userName,
       userLastName: user.userLastName,
       userEmail: user.userEmail,

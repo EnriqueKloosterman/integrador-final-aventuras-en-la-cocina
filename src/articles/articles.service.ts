@@ -4,10 +4,10 @@ import { UpdateArticleDto } from './dto/update-article.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Article } from './entities/article.entity';
 import { Repository } from 'typeorm';
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../users/entities/user.entity';
 import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
 import { v2 as cloudinary } from 'cloudinary'; 
-import { Tag } from 'src/tag/entities/tag.entity';
+import { Tag } from '../tag/entities/tag.entity';
 @Injectable()
 export class ArticlesService {
   constructor(
@@ -19,14 +19,14 @@ export class ArticlesService {
     private tagRepository: Repository<Tag>
   ){}
   // Manejo de la carga de imagenes a Cloudinary.
-  async handleUpload(image: Express.Multer.File, createArticleDto: CreateArticleDto): Promise<CloudinaryResponse>{
+  async handleUpload(image: Express.Multer.File, createArticleDto: CreateArticleDto, user: any): Promise<CloudinaryResponse>{
     return new Promise<CloudinaryResponse>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         (error, result) => {
           if(error) return reject(error)
           if (result && result.url){
             console.log('image uploaded succesfully. URL: ', result.url);
-            this.create(createArticleDto, result.url)
+            this.create(createArticleDto, user, result.url)
             .then(() => {
               resolve(result)
             })
@@ -46,7 +46,7 @@ export class ArticlesService {
 
 
   // Registro de Articulos
-  async create(createArticleDto: CreateArticleDto, imageUrl:string) {
+  async create(createArticleDto: CreateArticleDto, user: any, imageUrl:string) {
     const article = await this.articleRpository.findOne({
       where:{
         title:createArticleDto.title
@@ -58,7 +58,8 @@ export class ArticlesService {
     newArticle.title = createArticleDto.title,
     newArticle.tag = await this.tagRepository.findOne({where:{ tagId: createArticleDto.tagId }});
     newArticle.article = JSON.stringify(createArticleDto.article)
-    newArticle.image = imageUrl    
+    newArticle.image = imageUrl
+    newArticle.user = user.userId 
 
     try {
       await this.articleRpository.save(newArticle)
@@ -70,7 +71,9 @@ export class ArticlesService {
 
 
   async findAll():Promise<Article[]> {
-    return await this.articleRpository.find();
+    return await this.articleRpository.find({
+      relations:['user'],
+    });
   }
 
   findOne(id: number) {

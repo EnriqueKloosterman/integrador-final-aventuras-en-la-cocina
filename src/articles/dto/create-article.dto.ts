@@ -21,5 +21,5 @@ export class CreateArticleDto {
     tagId: number
 
     @IsString()
-    userId?: string;
+    userId: string;
 }

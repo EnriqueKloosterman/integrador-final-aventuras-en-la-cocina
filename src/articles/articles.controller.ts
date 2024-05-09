@@ -8,13 +8,14 @@ import { CONSTANTS } from 'src/constants/constants';
 import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { Role } from 'src/common/enums/role.enum';
+import { ActiveUser } from 'src/common/decorators/active.user.decorator';
 
-@Auth(Role.USER)
 @Controller('articles')
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
   @Post('register')
+  @Auth(Role.USER)
   @UseInterceptors(FileInterceptor('image'))
   async uploadFile(
     @UploadedFile(
@@ -27,12 +28,12 @@ export class ArticlesController {
       .addMaxSizeValidator({ maxSize: CONSTANTS.max_bytes_pic_size })
       .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY})
     )image: Express.Multer.File,
-    @Body() createArticleDto: CreateArticleDto): Promise<string> {
+    @Body() createArticleDto: CreateArticleDto, @ActiveUser() user: any): Promise<string> {
       if(!image || !createArticleDto){
         throw new HttpException('Image and data required', HttpStatus.BAD_REQUEST)
       }
       try {
-        const response: CloudinaryResponse = await this.articlesService.handleUpload(image, createArticleDto)
+        const response: CloudinaryResponse = await this.articlesService.handleUpload(image, createArticleDto, user)
         return response.url
       } catch (error) {
         throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
@@ -40,7 +41,7 @@ export class ArticlesController {
   }
 
   @Get('articles')
-  findAll() {
+  async findAll() {
     return this.articlesService.findAll();
   }
 

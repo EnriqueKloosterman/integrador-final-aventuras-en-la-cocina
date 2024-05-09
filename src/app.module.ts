@@ -19,7 +19,7 @@ import { CloudinaryProvider } from 'cloudinary/cloudinary.provider';
       port: 3306,
       username: 'root',
       password: null,
-      database: 'aventuras-en-la-cocina',
+      database: 'aventuras_en_la_cocina',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
