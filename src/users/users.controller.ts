@@ -1,8 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
+
+interface RequestWithUser extends Request {
+  user: {
+    userEmail: string,
+    userRole: string
+  }
+}
 
 @Controller('users')
 export class UsersController {
@@ -12,13 +19,6 @@ export class UsersController {
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.register(createUserDto);
   }
-
-  @Get('profile')
-  @UseGuards(AuthGuard)
-  profile(@Request() req) {
-    return req.user;
-  }
-
 
   @Get('users')
   @UseGuards(AuthGuard)

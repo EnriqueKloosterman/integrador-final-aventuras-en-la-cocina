@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, ParseFilePipeBuilder, HttpStatus, HttpException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, ParseFilePipeBuilder, HttpStatus, HttpException, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
@@ -7,6 +7,19 @@ import { CustomUploadFileTypeValidator } from 'src/constants/file-upload.validat
 import { CONSTANTS } from 'src/constants/constants';
 import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
 import { LoginDto } from './dto/login.dto';
+import { AuthGuard } from './guard/auth.guard';
+import { Roles } from './decorators/role.decorator';
+import { RolesGuard } from './guard/roles.guard';
+import { Role } from '../common/enums/role.enum';
+import { Auth } from './decorators/auth.decorator';
+import { ActiveUser } from 'src/common/decorators/active.user.decorator';
+
+interface RequestWithUser extends Request {
+  user: {
+    userEmail: string,
+    user_role: string
+  }
+}
 
 @Controller('auth')
 export class AuthController {
@@ -44,9 +57,12 @@ export class AuthController {
   }
 
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
+  @Get('profile')
+  // @Roles(Role.ADMIN)
+  // @UseGuards(AuthGuard, RolesGuard)
+  @Auth(Role.USER)
+  profile(@ActiveUser() user) {
+    return this.authService.profile(user)
   }
 
   @Get(':id')

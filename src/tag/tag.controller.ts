@@ -1,14 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe, HttpException, HttpStatus } from '@nestjs/common';
 import { TagService } from './tag.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
-import { AuthGuard } from 'src/auth/guard/auth.guard';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { Role } from 'src/common/enums/role.enum';
 
 @Controller('tag')
 export class TagController {
   constructor(private readonly tagService: TagService) {}
 
   @Post('register/tag')
+  @Auth(Role.ADMIN)
   @UsePipes(new ValidationPipe({ transform: true}))
   async create(@Body() createTagDto: CreateTagDto): Promise<CreateTagDto> {
     try {
@@ -44,6 +46,7 @@ export class TagController {
   }
 
   @Patch('update/tag/:id')
+  @Auth(Role.ADMIN)
   @UsePipes(new ValidationPipe({ transform: true}))
   async update(@Param('id') id: string, @Body() updateTagDto: UpdateTagDto): Promise<UpdateTagDto> {
     try {
@@ -56,7 +59,7 @@ export class TagController {
   }
 
   @Delete('remove/tag/:id')
-  @UseGuards(AuthGuard)
+  @Auth(Role.ADMIN)
   @UsePipes(new ValidationPipe({ transform: true}))
   async remove(@Param('id') id: string): Promise<void> {
     try {

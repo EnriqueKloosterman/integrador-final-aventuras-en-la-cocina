@@ -6,7 +6,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CustomUploadFileTypeValidator } from 'src/constants/file-upload.validator';
 import { CONSTANTS } from 'src/constants/constants';
 import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { Role } from 'src/common/enums/role.enum';
 
+@Auth(Role.USER)
 @Controller('articles')
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
@@ -36,7 +39,7 @@ export class ArticlesController {
       }
   }
 
-  @Get()
+  @Get('articles')
   findAll() {
     return this.articlesService.findAll();
   }

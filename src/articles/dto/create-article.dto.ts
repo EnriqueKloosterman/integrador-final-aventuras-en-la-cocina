@@ -20,6 +20,6 @@ export class CreateArticleDto {
     @Transform(({value}) => parseInt(value))
     tagId: number
 
-    // @IsString()
-    // userId?: string;
+    @IsString()
+    userId?: string;
 }

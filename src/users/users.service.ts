@@ -17,7 +17,7 @@ export class UsersService {
 
   async findAll() {
     return await this.userRepository.find({
-      select: ['userId', 'userName', 'userLastName', 'userEmail', 'image']
+      select: ['userId', 'userName', 'userLastName', 'userEmail', 'image', 'createdAt']
     });
   }
 
@@ -34,16 +34,7 @@ export class UsersService {
       where:{
         userEmail: userEmail
       },
-      select:['userId', 'userName', 'userLastName','userEmail','userPassword']
-    });
-  }
-
-  async profile(user): Promise<User>{
-    return await this.userRepository.findOne({
-      where:{
-        userId: user.userId
-      },
-      select:['userId', 'userName', 'userLastName','userEmail', 'image']
+      select:['userId', 'userName', 'userLastName','userEmail','userPassword', 'user_role']
     });
   }
 

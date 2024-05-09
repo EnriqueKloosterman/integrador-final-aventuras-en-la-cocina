@@ -1,4 +1,5 @@
 import { Article } from "src/articles/entities/article.entity";
+import { Role } from "src/common/enums/role.enum";
 import { Comment } from "src/comments/entities/comment.entity";
 import { Recipe } from "src/recipes/entities/recipe.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
@@ -22,14 +23,14 @@ export class User {
     @Column({ type: 'varchar', length: 80, nullable: false})
     userEmail: string;
 
-    @Column({ type: 'varchar', length: 80, nullable: false})
+    @Column({ type: 'varchar', length: 80, nullable: false, select: false})
     userPassword: string;
     
     @Column({ type: 'varchar', length: 100, nullable: false})
     image: string;
     
-    @Column({ type:'enum', enum: UserRole, default: UserRole.USER })
-    user_role: UserRole;
+    @Column({ type:'enum', enum: Role, default: Role.USER })
+    user_role: Role;
 
     @OneToMany(() => Recipe, recipe => recipe.user)
     recipe: Recipe;

@@ -69,7 +69,7 @@ export class AuthService {
   }
 
   async login({userEmail, userPassword}: LoginDto){
-    const user = await this.usersService.findOneByEmail(userEmail);
+    const user = await this.usersService.findEmailWithPassword(userEmail);
     if(!user){
       throw new BadRequestException('User not found');
     }
@@ -93,6 +93,10 @@ export class AuthService {
       image: user.image,
       userEmail: user.userEmail,
     }
+  }
+
+  async profile({userEmail, user_role}: {userEmail:string, user_role: string}){
+    return await this.usersService.findOneByEmail(userEmail);
   }
 
   findAll() {

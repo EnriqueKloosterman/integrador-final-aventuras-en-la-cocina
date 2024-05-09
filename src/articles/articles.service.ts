@@ -69,8 +69,8 @@ export class ArticlesService {
   }
 
 
-  findAll() {
-    return `This action returns all articles`;
+  async findAll():Promise<Article[]> {
+    return await this.articleRpository.find();
   }
 
   findOne(id: number) {
