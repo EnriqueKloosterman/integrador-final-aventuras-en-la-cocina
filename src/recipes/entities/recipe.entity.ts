@@ -13,8 +13,11 @@ export class Recipe {
 
     @Column({ type: 'text', nullable: false})
     recipe: string;
+    
+    @Column({type: 'text', nullable: false})
+    ingredients: string; 
 
-    @Column({ type: 'varchar', length: 60, nullable: false})
+    @Column({ type: 'varchar', length: 100, nullable: false})
     image: string;
 
     @ManyToOne(() => User, user => user.recipe)
@@ -32,7 +35,7 @@ export class Recipe {
         name: 'categoryId',
         referencedColumnName: 'categoryId'
     })
-    category: Category[];
+    category: Category;
 
     @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date;
