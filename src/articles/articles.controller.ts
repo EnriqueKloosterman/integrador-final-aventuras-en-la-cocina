@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, ParseFilePipeBuilder, HttpStatus, HttpException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, ParseFilePipeBuilder, HttpStatus, HttpException, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
@@ -9,6 +9,8 @@ import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import { ActiveUser } from 'src/common/decorators/active.user.decorator';
+import { Article } from './entities/article.entity';
+import { IUserActive } from 'src/common/inteface/user-active.interface';
 
 @Controller('articles')
 export class ArticlesController {
@@ -20,34 +22,69 @@ export class ArticlesController {
   async uploadFile(
     @UploadedFile(
       new ParseFilePipeBuilder()
-      .addValidator(
-        new CustomUploadFileTypeValidator({
-          fileType: CONSTANTS.valid_mime_types
-        })
-      )
-      .addMaxSizeValidator({ maxSize: CONSTANTS.max_bytes_pic_size })
-      .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY})
-    )image: Express.Multer.File,
-    @Body() createArticleDto: CreateArticleDto, @ActiveUser() user: any): Promise<string> {
-      if(!image || !createArticleDto){
-        throw new HttpException('Image and data required', HttpStatus.BAD_REQUEST)
-      }
-      try {
-        const response: CloudinaryResponse = await this.articlesService.handleUpload(image, createArticleDto, user)
-        return response.url
-      } catch (error) {
-        throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
-      }
+        .addValidator(
+          new CustomUploadFileTypeValidator({
+            fileType: CONSTANTS.valid_mime_types,
+          }),
+        )
+        .addMaxSizeValidator({ maxSize: CONSTANTS.max_bytes_pic_size })
+        .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
+    )
+    image: Express.Multer.File,
+    @Body() createArticleDto: CreateArticleDto,
+    @ActiveUser() user: any,
+  ): Promise<string> {
+    if (!image || !createArticleDto) {
+      throw new HttpException(
+        'Image and data required',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    try {
+      const response: CloudinaryResponse =
+        await this.articlesService.handleUpload(image, createArticleDto, user);
+      return response.url;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Get('articles')
+  @UsePipes(new ValidationPipe({ transform: true }))
   async findAll() {
-    return this.articlesService.findAll();
+    try {
+      const articles = await this.articlesService.findAll();
+      if (articles.length) {
+        return articles;
+      }
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.articlesService.findOne(+id);
+  //TODO: hacer getArticlesByUser
+  @Get('articles/user')
+  @Auth(Role.USER)
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async getArticlesByUser(@ActiveUser() user: IUserActive): Promise<Article[]> {
+    try {
+      return await this.articlesService.findAllUserArticles(user);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+
+  @Get('article/:id')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async findOne(@Param('id') id: string): Promise<Article> {
+    try {
+      const article= await this.articlesService.findOne(id);
+      if(!article) throw new HttpException('Article not found', HttpStatus.NOT_FOUND)
+      return article
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Patch(':id')
@@ -55,8 +92,16 @@ export class ArticlesController {
     return this.articlesService.update(+id, updateArticleDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.articlesService.remove(+id);
+  @Delete('remove/:id')
+  @Auth(Role.USER)
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async remove(@Param('id') id: string): Promise<void> {
+    try {
+      const article = await  this.articlesService.findOne(id);
+      if(!article) throw new HttpException('Article not found', HttpStatus.NOT_FOUND)
+      return await this.articlesService.remove(id);      
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
   }
 }

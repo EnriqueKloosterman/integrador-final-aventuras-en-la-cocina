@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,6 +8,7 @@ import { User } from '../users/entities/user.entity';
 import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
 import { v2 as cloudinary } from 'cloudinary'; 
 import { Tag } from '../tag/entities/tag.entity';
+import { IUserActive } from 'src/common/inteface/user-active.interface';
 @Injectable()
 export class ArticlesService {
   constructor(
@@ -71,20 +72,64 @@ export class ArticlesService {
 
 
   async findAll():Promise<Article[]> {
-    return await this.articleRpository.find({
-      relations:['user'],
+    const articles = await this.articleRpository.find({
+      relations:['user', 'tag'],
     });
+    try {
+      if(!articles){
+        throw new BadRequestException('Articles not found')
+      }
+      return articles
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} article`;
+  async findAllUserArticles(user: IUserActive): Promise<Article[]> {
+    const articles = await this.articleRpository.find({
+      where:{
+        user:{ userId: user.userId}
+      },
+      relations:['user', 'tag']
+    });
+    try {
+      if(!articles) throw new BadRequestException('Articles not found');
+      return articles
+    } catch (error) {
+      throw new BadRequestException('Articles not found');
+    }
+  }
+
+  async findOne(id: string): Promise<Article> {
+    const article = await this.articleRpository.findOne({
+      where:{
+        articleId:id
+      },
+      relations:['user', 'tag']
+    });
+    try {
+      if(!article) throw new BadRequestException('Article not found');
+      return article
+    } catch (error) {
+      throw new BadRequestException('Article does not exist');
+    }
   }
 
   update(id: number, updateArticleDto: UpdateArticleDto) {
     return `This action updates a #${id} article`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} article`;
+  async remove(id: string): Promise<void> {
+    const article = await this.articleRpository.findOne({
+      where:{
+        articleId:id
+      }
+    })
+    try {
+      if(!article) throw new BadRequestException('Article not found');
+      await this.articleRpository.delete(id);
+    } catch (error) {
+      throw new BadRequestException('Article does not exist');
+    }
   }
 }

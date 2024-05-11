@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, ParseFilePipeBuilder, HttpStatus, HttpException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, ParseFilePipeBuilder, HttpStatus, HttpException, UsePipes, ValidationPipe } from '@nestjs/common';
 import { RecipesService } from './recipes.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
@@ -9,6 +9,8 @@ import { CustomUploadFileTypeValidator } from 'src/constants/file-upload.validat
 import { CONSTANTS } from 'src/constants/constants';
 import { ActiveUser } from 'src/common/decorators/active.user.decorator';
 import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
+import { IUserActive } from 'src/common/inteface/user-active.interface';
+import { Recipe } from './entities/recipe.entity';
 
 @Controller('recipes')
 export class RecipesController {
@@ -41,13 +43,36 @@ export class RecipesController {
     }
 
   @Get('recipes')
+  @UsePipes(new ValidationPipe({ transform: true}))
   async findAll() {
-    return this.recipesService.findAll();
+    try {
+      const recipes = await this.recipesService.findAll();
+      if(recipes.length) return recipes      
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
+    }
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.recipesService.findOne(+id);
+  @Get('user')
+  @Auth(Role.USER)
+  async findAllUserRecipes(@ActiveUser() user: IUserActive): Promise<Recipe[]>{
+    try {
+      return await this.recipesService.findAllUserRecipes(user)
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
+    }
+  }
+
+
+  @Get('recipe/:id')
+  async findOne(@Param('id') id: string): Promise<Recipe> {
+    try {
+      const recipe = await this.recipesService.findOne(id);
+      if(!recipe) throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND)
+      return recipe
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
+    }
   }
 
   @Patch(':id')
@@ -55,8 +80,15 @@ export class RecipesController {
     return this.recipesService.update(+id, updateRecipeDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.recipesService.remove(+id);
+  @Delete('remove/:id')
+  @Auth(Role.USER)
+  @UsePipes(new ValidationPipe({ transform: true}))
+  async remove(@Param('id') id: string): Promise<void> {
+    try {
+      const recipe = await this.recipesService.findOne(id);
+      if(!recipe) throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND)
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
+    }
   }
 }

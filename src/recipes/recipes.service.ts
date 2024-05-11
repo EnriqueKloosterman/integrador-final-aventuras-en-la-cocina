@@ -8,6 +8,7 @@ import { User } from 'src/users/entities/user.entity';
 import { Category } from 'src/categories/entities/category.entity';
 import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
 import { v2 as cloidinary } from 'cloudinary';
+import { IUserActive } from 'src/common/inteface/user-active.interface';
 @Injectable()
 export class RecipesService {
   constructor(
@@ -77,15 +78,51 @@ export class RecipesService {
     })
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} recipe`;
+  async findAllUserRecipes(user:IUserActive): Promise<Recipe[]> {
+    const recipes =  await this.recipeRepository.find({
+      where: {
+        user: {userId: user.userId}
+      },
+      relations: ['user', 'category']
+    })
+    try {
+      if(!recipes) throw new Error('No recipes found')
+      return recipes;
+    } catch (error) {
+      throw new BadRequestException('Articles not found')
+    }
   }
+
+  async findOne(id: string): Promise<Recipe> {
+    const recipe = await this.recipeRepository.findOne({
+      where: {
+        recipeId: id
+      },
+      relations: ['user', 'category']
+    })
+    try {
+      if(!recipe) throw new Error('No recipe found')
+      return recipe
+    } catch (error) {
+      throw new BadRequestException('Recipe not found')
+    }
+  } 
 
   update(id: number, updateRecipeDto: UpdateRecipeDto) {
     return `This action updates a #${id} recipe`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} recipe`;
+  async remove(id: string): Promise<void> {
+    const recipe = await this.recipeRepository.findOne({
+      where: {
+        recipeId: id
+      }
+    });
+    try {
+      if(!recipe) throw new Error('No recipe found')
+        await this.recipeRepository.remove(recipe);
+    } catch (error) {
+      throw new BadRequestException('Recipe not found')
+    }
   }
 }
