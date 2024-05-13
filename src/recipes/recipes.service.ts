@@ -107,9 +107,25 @@ export class RecipesService {
       throw new BadRequestException('Recipe not found')
     }
   } 
-
-  update(id: number, updateRecipeDto: UpdateRecipeDto) {
-    return `This action updates a #${id} recipe`;
+  //TODO: testear el update
+  async update(id: string, user: IUserActive, updateRecipeDto: UpdateRecipeDto): Promise<Recipe> {
+    const recipe = await this.recipeRepository.findOne({
+      where: {
+        recipeId: id,
+        user: {userId: user.userId},
+      },
+    });
+    if(!recipe) throw new BadRequestException('Recipe not found');
+    recipe.title = updateRecipeDto.title
+    recipe.recipe = JSON.stringify(updateRecipeDto.recipe)
+    recipe.ingredients = JSON.stringify(updateRecipeDto.ingredients)
+    recipe.category = await this.categoryRepository.findOne({where: {categoryId: updateRecipeDto.categoryId}
+    });
+    try {
+      return await this.recipeRepository.save(recipe);
+    } catch (error) {
+      throw new BadRequestException('Recipe not found')
+    }
   }
 
   async remove(id: string): Promise<void> {

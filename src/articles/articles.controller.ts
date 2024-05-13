@@ -62,7 +62,6 @@ export class ArticlesController {
     }
   }
 
-  //TODO: hacer getArticlesByUser
   @Get('articles/user')
   @Auth(Role.USER)
   @UsePipes(new ValidationPipe({ transform: true }))
@@ -73,7 +72,6 @@ export class ArticlesController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-
 
   @Get('article/:id')
   @UsePipes(new ValidationPipe({ transform: true }))
@@ -86,10 +84,24 @@ export class ArticlesController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateArticleDto: UpdateArticleDto) {
-    return this.articlesService.update(+id, updateArticleDto);
+    //TODO: testear el update
+  @Patch('update/article/:id')
+  @Auth(Role.USER)
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async update(
+    @Param('id') id: string,
+    @Body() updateArticleDto: UpdateArticleDto | string,
+    @ActiveUser() user: IUserActive
+  ): Promise<Article> {
+    try {
+      if (typeof updateArticleDto === 'string') {
+        updateArticleDto = { article: updateArticleDto };
+      }
+      const article = await this.articlesService.update(id, user, updateArticleDto);
+      return article;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Delete('remove/:id')
