@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TagModule } from './tag/tag.module';
 import { AuthModule } from './auth/auth.module';
 import { CloudinaryProvider } from 'cloudinary/cloudinary.provider';
+import { rootCertificates } from 'tls';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { CloudinaryProvider } from 'cloudinary/cloudinary.provider';
       host: 'localhost',
       port: 3306,
       username: 'root',
-      password: null,
+      password: 'root',
       database: 'aventuras_en_la_cocina',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
