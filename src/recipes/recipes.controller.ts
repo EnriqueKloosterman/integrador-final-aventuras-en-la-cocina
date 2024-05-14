@@ -11,11 +11,14 @@ import { ActiveUser } from 'src/common/decorators/active.user.decorator';
 import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
 import { IUserActive } from 'src/common/inteface/user-active.interface';
 import { Recipe } from './entities/recipe.entity';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Recipes')
 @Controller('recipes')
 export class RecipesController {
   constructor(private readonly recipesService: RecipesService) {}
 
+  @ApiBearerAuth()
   @Post('register')
   @Auth(Role.USER)
   @UseInterceptors(FileInterceptor('image'))
@@ -53,6 +56,7 @@ export class RecipesController {
     }
   }
 
+  @ApiBearerAuth()
   @Get('user')
   @Auth(Role.USER)
   async findAllUserRecipes(@ActiveUser() user: IUserActive): Promise<Recipe[]>{
@@ -75,6 +79,7 @@ export class RecipesController {
     }
   }
   //TODO: testear el update
+  @ApiBearerAuth()
   @Patch('update/recipe/:id')
   @Auth(Role.USER)
   @UsePipes(new ValidationPipe({ transform: true}))
@@ -89,7 +94,7 @@ export class RecipesController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-
+  @ApiBearerAuth()
   @Delete('remove/:id')
   @Auth(Role.USER)
   @UsePipes(new ValidationPipe({ transform: true}))

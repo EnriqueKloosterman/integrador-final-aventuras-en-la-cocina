@@ -3,14 +3,10 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
+import { ApiTags } from '@nestjs/swagger';
 
-interface RequestWithUser extends Request {
-  user: {
-    userEmail: string,
-    userRole: string
-  }
-}
-
+//FIXME: remover endpoints sin usar
+@ApiTags('Users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

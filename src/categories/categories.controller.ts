@@ -18,11 +18,14 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { Role } from 'src/common/enums/role.enum';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Categories')
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
-
+  
+  @ApiBearerAuth()
   @Post('register/category')
   @Auth(Role.ADMIN)
   @UsePipes(new ValidationPipe({ transform: true }))
@@ -65,7 +68,7 @@ export class CategoriesController {
       throw new HttpException(error.message, HttpStatus.NOT_FOUND);
     }
   }
-
+  @ApiBearerAuth()
   @Patch('update/category/:id')
   @Auth(Role.ADMIN)
   @UsePipes(new ValidationPipe({ transform: true }))
@@ -84,6 +87,7 @@ export class CategoriesController {
     }
   }
 
+  @ApiBearerAuth()
   @Delete('remove/category/:id')
   @Auth(Role.ADMIN)
   @UseGuards(AuthGuard)

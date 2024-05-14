@@ -13,6 +13,7 @@ import { RolesGuard } from './guard/roles.guard';
 import { Role } from '../common/enums/role.enum';
 import { Auth } from './decorators/auth.decorator';
 import { ActiveUser } from 'src/common/decorators/active.user.decorator';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 interface RequestWithUser extends Request {
   user: {
@@ -20,7 +21,7 @@ interface RequestWithUser extends Request {
     user_role: string
   }
 }
-
+@ApiTags('Users')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -56,10 +57,8 @@ export class AuthController {
     return this.authService.login(loginDto)
   }
 
-
+  @ApiBearerAuth()
   @Get('profile')
-  // @Roles(Role.ADMIN)
-  // @UseGuards(AuthGuard, RolesGuard)
   @Auth(Role.USER)
   profile(@ActiveUser() user) {
     return this.authService.profile(user)
@@ -69,12 +68,13 @@ export class AuthController {
   findOne(@Param('id') id: string) {
     return this.authService.findOne(+id);
   }
-
+  @ApiBearerAuth()
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
     return this.authService.update(+id, updateAuthDto);
   }
 
+  @ApiBearerAuth()
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.authService.remove(+id);

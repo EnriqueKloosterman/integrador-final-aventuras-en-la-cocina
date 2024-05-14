@@ -4,11 +4,15 @@ import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { Role } from 'src/common/enums/role.enum';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+
+@ApiTags('Tags (Admin)')
 
 @Controller('tag')
 export class TagController {
   constructor(private readonly tagService: TagService) {}
 
+  @ApiBearerAuth()
   @Post('register/tag')
   @Auth(Role.ADMIN)
   @UsePipes(new ValidationPipe({ transform: true}))
@@ -45,6 +49,7 @@ export class TagController {
     }
   }
 
+  @ApiBearerAuth()
   @Patch('update/tag/:id')
   @Auth(Role.ADMIN)
   @UsePipes(new ValidationPipe({ transform: true}))
@@ -58,6 +63,7 @@ export class TagController {
     }
   }
 
+  @ApiBearerAuth()
   @Delete('remove/tag/:id')
   @Auth(Role.ADMIN)
   @UsePipes(new ValidationPipe({ transform: true}))

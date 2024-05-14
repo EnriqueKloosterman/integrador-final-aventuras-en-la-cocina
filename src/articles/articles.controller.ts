@@ -1,4 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, ParseFilePipeBuilder, HttpStatus, HttpException, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipeBuilder,
+  HttpStatus,
+  HttpException,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
@@ -11,11 +26,14 @@ import { Role } from 'src/common/enums/role.enum';
 import { ActiveUser } from 'src/common/decorators/active.user.decorator';
 import { Article } from './entities/article.entity';
 import { IUserActive } from 'src/common/inteface/user-active.interface';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Articles')
 @Controller('articles')
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
+  @ApiBearerAuth()
   @Post('register')
   @Auth(Role.USER)
   @UseInterceptors(FileInterceptor('image'))
@@ -61,7 +79,7 @@ export class ArticlesController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-
+  @ApiBearerAuth()
   @Get('articles/user')
   @Auth(Role.USER)
   @UsePipes(new ValidationPipe({ transform: true }))
@@ -77,41 +95,49 @@ export class ArticlesController {
   @UsePipes(new ValidationPipe({ transform: true }))
   async findOne(@Param('id') id: string): Promise<Article> {
     try {
-      const article= await this.articlesService.findOne(id);
-      if(!article) throw new HttpException('Article not found', HttpStatus.NOT_FOUND)
-      return article
+      const article = await this.articlesService.findOne(id);
+      if (!article)
+        throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
+      return article;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-    //TODO: testear el update
+  //TODO: testear el update
+  @ApiBearerAuth()
   @Patch('update/article/:id')
   @Auth(Role.USER)
   @UsePipes(new ValidationPipe({ transform: true }))
   async update(
     @Param('id') id: string,
     @Body() updateArticleDto: UpdateArticleDto | string,
-    @ActiveUser() user: IUserActive
+    @ActiveUser() user: IUserActive,
   ): Promise<Article> {
     try {
       if (typeof updateArticleDto === 'string') {
         updateArticleDto = { article: updateArticleDto };
       }
-      const article = await this.articlesService.update(id, user, updateArticleDto);
+      const article = await this.articlesService.update(
+        id,
+        user,
+        updateArticleDto,
+      );
       return article;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 
+  @ApiBearerAuth()
   @Delete('remove/:id')
   @Auth(Role.USER)
   @UsePipes(new ValidationPipe({ transform: true }))
   async remove(@Param('id') id: string): Promise<void> {
     try {
-      const article = await  this.articlesService.findOne(id);
-      if(!article) throw new HttpException('Article not found', HttpStatus.NOT_FOUND)
-      return await this.articlesService.remove(id);      
+      const article = await this.articlesService.findOne(id);
+      if (!article)
+        throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
+      return await this.articlesService.remove(id);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
