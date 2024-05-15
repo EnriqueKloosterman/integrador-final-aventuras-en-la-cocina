@@ -126,40 +126,20 @@ export class RecipesService {
     }
   } 
   //TODO: testear el update
-  // async update(id: string, user: IUserActive, updateRecipeDto: UpdateRecipeDto): Promise<Recipe> {
-  //   const recipe = await this.recipeRepository.findOne({
-  //     where: {
-  //       recipeId: id,
-  //       user: {userId: user.userId},
-  //     },
-  //   });
-  //   if(!recipe) throw new BadRequestException('Recipe not found');
-  //   recipe.title = updateRecipeDto.title
-  //   recipe.description = JSON.stringify(updateRecipeDto.description)
-  //   recipe.instructions = JSON.stringify(updateRecipeDto.instructions)
-  //   recipe.ingredients = JSON.stringify(updateRecipeDto.ingredients)
-  //   recipe.category = await this.categoryRepository.findOne({where: {categoryId: updateRecipeDto.categoryId}
-  //   });
-  //   try {
-  //     return await this.recipeRepository.save(recipe);
-  //   } catch (error) {
-  //     throw new BadRequestException('Recipe not found')
-  //   }
-  // }
   async update(id: string, user: IUserActive, updateRecipeDto: UpdateRecipeDto): Promise<Recipe> {
     const recipe = await this.recipeRepository.findOne({
       where: {
         recipeId: id,
         user: { userId: user.userId },
       },
-      relations: ['user', 'category'] // Añadir relaciones para obtener el usuario y la categoría
+      relations: ['user', 'category'] 
     });
   
     if (!recipe) {
       throw new BadRequestException('Recipe not found');
     }
   
-    // Actualizar los campos de la receta
+
     recipe.title = updateRecipeDto.title;
     recipe.description = JSON.stringify(updateRecipeDto.description);
     recipe.instructions = JSON.stringify(updateRecipeDto.instructions);
@@ -168,10 +148,6 @@ export class RecipesService {
   
     try {
       await this.recipeRepository.save(recipe);
-      // Parsear los datos de la receta antes de devolverla
-      // recipe.description = JSON.parse(recipe.description);
-      // recipe.instructions = JSON.parse(recipe.instructions);
-      // recipe.ingredients = JSON.parse(recipe.ingredients);
       return recipe;
     } catch (error) {
       throw new BadRequestException('Failed to update recipe');
