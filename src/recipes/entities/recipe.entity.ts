@@ -11,8 +11,11 @@ export class Recipe {
     @Column({type: 'varchar', length: 150, nullable: false })
     title: string;
 
+    @Column({ type: 'text', nullable: true})
+    description: string;
+
     @Column({ type: 'text', nullable: false})
-    recipe: string;
+    instructions: string;
     
     @Column({type: 'text', nullable: false})
     ingredients: string; 

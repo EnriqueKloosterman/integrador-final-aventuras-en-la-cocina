@@ -55,7 +55,8 @@ export class RecipesService {
     
     const newRecipe = new Recipe()
     newRecipe.title = createRecipeDto.title
-    newRecipe.recipe = JSON.stringify(createRecipeDto.recipe)
+    newRecipe.description = JSON.stringify(createRecipeDto.description)
+    newRecipe.instructions = JSON.stringify(createRecipeDto.instructions)
     newRecipe.ingredients = JSON.stringify(createRecipeDto.ingredients)
     newRecipe.category = await this.categoryRepository.findOne({where: {categoryId: createRecipeDto.categoryId}})
     newRecipe.image = imageUrl
@@ -73,10 +74,18 @@ export class RecipesService {
   }
 
   async findAll(): Promise<Recipe[]> {
-    return await this.recipeRepository.find({
+    const recipes = await this.recipeRepository.find({
       relations: ['user', 'category']
-    })
+    });
+    recipes.forEach(recipe => {
+      recipe.description = JSON.parse(recipe.description);
+      recipe.instructions = JSON.parse(recipe.instructions);
+      recipe.ingredients = JSON.parse(recipe.ingredients);
+    });
+  
+    return recipes;
   }
+  
 
   async findAllUserRecipes(user:IUserActive): Promise<Recipe[]> {
     const recipes =  await this.recipeRepository.find({
@@ -87,7 +96,13 @@ export class RecipesService {
     })
     try {
       if(!recipes) throw new Error('No recipes found')
-      return recipes;
+        recipes.forEach(recipe => {
+          recipe.description = JSON.parse(recipe.description);
+          recipe.instructions = JSON.parse(recipe.instructions);
+          recipe.ingredients = JSON.parse(recipe.ingredients);
+        });
+      
+        return recipes;
     } catch (error) {
       throw new BadRequestException('Articles not found')
     }
@@ -102,29 +117,64 @@ export class RecipesService {
     })
     try {
       if(!recipe) throw new Error('No recipe found')
+      recipe.description = JSON.parse(recipe.description);
+      recipe.instructions = JSON.parse(recipe.instructions);
+      recipe.ingredients = JSON.parse(recipe.ingredients);
       return recipe
     } catch (error) {
       throw new BadRequestException('Recipe not found')
     }
   } 
   //TODO: testear el update
+  // async update(id: string, user: IUserActive, updateRecipeDto: UpdateRecipeDto): Promise<Recipe> {
+  //   const recipe = await this.recipeRepository.findOne({
+  //     where: {
+  //       recipeId: id,
+  //       user: {userId: user.userId},
+  //     },
+  //   });
+  //   if(!recipe) throw new BadRequestException('Recipe not found');
+  //   recipe.title = updateRecipeDto.title
+  //   recipe.description = JSON.stringify(updateRecipeDto.description)
+  //   recipe.instructions = JSON.stringify(updateRecipeDto.instructions)
+  //   recipe.ingredients = JSON.stringify(updateRecipeDto.ingredients)
+  //   recipe.category = await this.categoryRepository.findOne({where: {categoryId: updateRecipeDto.categoryId}
+  //   });
+  //   try {
+  //     return await this.recipeRepository.save(recipe);
+  //   } catch (error) {
+  //     throw new BadRequestException('Recipe not found')
+  //   }
+  // }
   async update(id: string, user: IUserActive, updateRecipeDto: UpdateRecipeDto): Promise<Recipe> {
     const recipe = await this.recipeRepository.findOne({
       where: {
         recipeId: id,
-        user: {userId: user.userId},
+        user: { userId: user.userId },
       },
+      relations: ['user', 'category'] // Añadir relaciones para obtener el usuario y la categoría
     });
-    if(!recipe) throw new BadRequestException('Recipe not found');
-    recipe.title = updateRecipeDto.title
-    recipe.recipe = JSON.stringify(updateRecipeDto.recipe)
-    recipe.ingredients = JSON.stringify(updateRecipeDto.ingredients)
-    recipe.category = await this.categoryRepository.findOne({where: {categoryId: updateRecipeDto.categoryId}
-    });
+  
+    if (!recipe) {
+      throw new BadRequestException('Recipe not found');
+    }
+  
+    // Actualizar los campos de la receta
+    recipe.title = updateRecipeDto.title;
+    recipe.description = JSON.stringify(updateRecipeDto.description);
+    recipe.instructions = JSON.stringify(updateRecipeDto.instructions);
+    recipe.ingredients = JSON.stringify(updateRecipeDto.ingredients);
+    recipe.category = await this.categoryRepository.findOne({ where: { categoryId: updateRecipeDto.categoryId } });
+  
     try {
-      return await this.recipeRepository.save(recipe);
+      await this.recipeRepository.save(recipe);
+      // Parsear los datos de la receta antes de devolverla
+      // recipe.description = JSON.parse(recipe.description);
+      // recipe.instructions = JSON.parse(recipe.instructions);
+      // recipe.ingredients = JSON.parse(recipe.ingredients);
+      return recipe;
     } catch (error) {
-      throw new BadRequestException('Recipe not found')
+      throw new BadRequestException('Failed to update recipe');
     }
   }
 

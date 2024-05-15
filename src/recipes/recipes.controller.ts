@@ -86,7 +86,7 @@ export class RecipesController {
   async update(@Param('id') id: string, @Body() updateRecipeDto: UpdateRecipeDto | string, @ActiveUser() user: IUserActive): Promise<Recipe> {
     try {
       if(typeof updateRecipeDto === 'string'){
-        updateRecipeDto = {recipe: updateRecipeDto}
+        updateRecipeDto = {instructions: updateRecipeDto}
       }
       const recipe = await this.recipesService.update(id, user, updateRecipeDto,); 
       return recipe
