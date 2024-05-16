@@ -91,6 +91,9 @@ export class ArticlesService {
       if (!articles) {
         throw new BadRequestException('Articles not found');
       }
+      articles.forEach((article) => {
+        article.article = JSON.parse(article.article);
+      });
       return articles;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -106,6 +109,9 @@ export class ArticlesService {
     });
     try {
       if (!articles) throw new BadRequestException('Articles not found');
+      articles.forEach((article) => {
+        article.article = JSON.parse(article.article);
+      });
       return articles;
     } catch (error) {
       throw new BadRequestException('Articles not found');
@@ -121,6 +127,7 @@ export class ArticlesService {
     });
     try {
       if (!article) throw new BadRequestException('Article not found');
+      article.article = JSON.parse(article.article);
       return article;
     } catch (error) {
       throw new BadRequestException('Article does not exist');

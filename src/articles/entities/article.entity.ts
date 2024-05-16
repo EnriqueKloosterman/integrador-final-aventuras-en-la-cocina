@@ -13,7 +13,7 @@ export class Article {
     @Column({type: 'text', nullable: false})
     article: string;
 
-    @Column({type: 'varchar', length:60, nullable: false})
+    @Column({type: 'varchar', length:100, nullable: false})
     image: string;
 
     @ManyToOne(() => User, user => user.article)
