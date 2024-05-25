@@ -3,7 +3,9 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { Role } from 'src/common/enums/role.enum';
 
 //FIXME: remover endpoints sin usar
 @ApiTags('Users')
@@ -12,12 +14,12 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
 
-
-  // @Get('users')
-  // @UseGuards(AuthGuard)
-  // findAll() {
-  //   return this.usersService.findAll();
-  // }
+  @ApiBearerAuth()
+  @Get('users')
+  @Auth(Role.ADMIN)
+  findAll() {
+    return this.usersService.findAll();
+  }
 
   // @Get(':id')
   // findOne(@Param('id') id: string) {

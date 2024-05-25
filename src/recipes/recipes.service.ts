@@ -122,7 +122,7 @@ export class RecipesService {
       recipe.ingredients = JSON.parse(recipe.ingredients);
       return recipe
     } catch (error) {
-      throw new BadRequestException('Recipe not found')
+      throw new BadRequestException(error.message, 'Recipe not found')
     }
   } 
   //TODO: testear el update

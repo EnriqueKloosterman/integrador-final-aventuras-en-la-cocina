@@ -5,10 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Article } from './entities/article.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Tag } from 'src/tag/entities/tag.entity';
+import { Comment } from 'src/comments/entities/comment.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Article, User, Tag])
+    TypeOrmModule.forFeature([Article, User, Tag, Comment])
   ],
   controllers: [ArticlesController],
   providers: [ArticlesService],

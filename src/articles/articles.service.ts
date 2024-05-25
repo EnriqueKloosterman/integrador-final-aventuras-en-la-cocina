@@ -82,7 +82,7 @@ export class ArticlesService {
       throw new Error('Arcticle creation failed');
     }
   }
-
+ // Listado de articulos
   async findAll(): Promise<Article[]> {
     const articles = await this.articleRpository.find({
       relations: ['user', 'tag'],
@@ -99,7 +99,7 @@ export class ArticlesService {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-
+  // Listado de articulos por ususrio
   async findAllUserArticles(user: IUserActive): Promise<Article[]> {
     const articles = await this.articleRpository.find({
       where: {
@@ -117,7 +117,7 @@ export class ArticlesService {
       throw new BadRequestException('Articles not found');
     }
   }
-
+  // Busqueda de articulos por su Id
   async findOne(id: string): Promise<Article> {
     const article = await this.articleRpository.findOne({
       where: {
@@ -134,7 +134,8 @@ export class ArticlesService {
     }
   }
     //TODO: testear el update
-  async update(id: string, user: IUserActive, updateArticleDto: UpdateArticleDto):  Promise<Article> {
+    // Modificacion de articulos
+    async update(id: string, user: IUserActive, updateArticleDto: UpdateArticleDto):  Promise<Article> {
     const article = await this.articleRpository.findOne({
       where: {
         articleId: id,
@@ -153,7 +154,7 @@ export class ArticlesService {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-
+  // Borra el articulo de la base de datos
   async remove(id: string): Promise<void> {
     const article = await this.articleRpository.findOne({
       where: {

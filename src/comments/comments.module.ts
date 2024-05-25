@@ -5,10 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Recipe } from 'src/recipes/entities/recipe.entity';
 import { Comment } from './entities/comment.entity';
+import { Article } from 'src/articles/entities/article.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Comment, User, Recipe])
+    TypeOrmModule.forFeature([Comment, User, Recipe, Article])
   ],
   controllers: [CommentsController],
   providers: [CommentsService],

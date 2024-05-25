@@ -102,6 +102,7 @@ export class RecipesController {
     try {
       const recipe = await this.recipesService.findOne(id);
       if(!recipe) throw new HttpException('Recipe not found', HttpStatus.NOT_FOUND)
+      await this.recipesService.remove(id);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
     }
