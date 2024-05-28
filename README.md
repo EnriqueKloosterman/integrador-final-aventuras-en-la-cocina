@@ -1,73 +1,83 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Adventures in the Kitchen - Backend Application
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Welcome to the backend application for **Adventures in the Kitchen**, a blog dedicated to the exquisite art of cooking. This application is built using [NestJS](https://nestjs.com/), a progressive Node.js framework for building efficient and scalable server-side applications.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Features
 
-## Description
+- **User Authentication**: Secure user registration and login system.
+- **Recipe  and Article Management**: Create, read, update, and delete (CRUD) operations for recipes and articles.
+- **Comment System**: Users can comment on recipes and articles.
+- **Profile Management**: Users can manage their profiles and view other users' profiles.
+- **Interactive Community**: Facilitates interaction among users through comments and recipe sharing.
+- **API Documentation**: Automatically generated API documentation using Swagger.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Prerequisites
 
-## Installation
+- [Node.js](https://nodejs.org/) (v14.x or later)
+- [npm](https://www.npmjs.com/) (v6.x or later) or [yarn](https://yarnpkg.com/)
+- [MySQL](https://www.mysql.com/) or any other database supported by TypeORM
 
-```bash
-$ npm install
-```
+## Getting Started
 
-## Running the app
+Follow these steps to set up and run the application locally.
 
-```bash
-# development
-$ npm run start
+### Installation
 
-# watch mode
-$ npm run start:dev
+1. **Clone the repository:**
 
-# production mode
-$ npm run start:prod
-```
+   ```bash
+   git clonehttps://github.com/EnriqueKloosterman/integrador-final-aventuras-en-la-cocina.git
+   cd adventures-in-the-kitchen-backend
+   ```
 
-## Test
+2. **Install the dependencies:**
+  using npm:
 
-```bash
-# unit tests
-$ npm run test
+  ```bash
+  npm install
+  ```
 
-# e2e tests
-$ npm run test:e2e
+## Configuration
 
-# test coverage
-$ npm run test:cov
-```
+1. **Envoriment variables:**
+Create a `.env` file in the root directory ad add the following enviroment variables:
+  ```env
+  CLOUDINARY_NAME=your_cloudinary_cloud_name,
+  CLOUDINARY_API_KEY=your_cloudinary_API_KEY,
+  CLOUDINARY_API_SECRET=your_cloudinary_API_SECRET,
+  JWT_SECRET=your_secret_key,
+  DATABASE_HOST=localhost,
+  DATABASE_PORT= 3306,
+  DATABASE_USERNAME=your_database_user,
+  DATABASE_PASSWORD=your_database_password,
+  DATABASE_NAME=aventurascocina
+  ```
 
-## Support
+## Running the Application
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+1. **Start the development server:**
+  using npm
+  ```bash
+  npm run start:dev
+  ```
+  
+  The server will start on the port `http://localhost:3030/api/v2`
 
-## Stay in touch
+  ### API Documentation
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+This application uses Swagger to automatically generate API documentation. Once the server is running, you can access the Swagger UI at `http://localhost:3030/api`.
+
+**Using the Swagger UI:**
+
+1. **Access the Swagger UI:**
+   Open your browser and navigate to `http://localhost:3030/api`. You will see the interactive API documentation.
+
+2. **Explore the API:**
+   The Swagger UI provides a detailed overview of all available endpoints. You can interact with the API directly from the UI by sending requests and viewing responses.
+
+3. **Test the Endpoints:**
+   Use the "Try it out" button next to each endpoint to send requests and see the results. This is a great way to understand how the API works and to test different scenarios.
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
