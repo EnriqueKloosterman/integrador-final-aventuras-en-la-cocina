@@ -26,8 +26,8 @@ Follow these steps to set up and run the application locally.
 1. **Clone the repository:**
 
    ```bash
-   git clonehttps://github.com/EnriqueKloosterman/integrador-final-aventuras-en-la-cocina.git
-   cd adventures-in-the-kitchen-backend
+   git clone https://github.com/EnriqueKloosterman/integrador-final-aventuras-en-la-cocina.git
+   cd integrador-final-aventuras-en-la-cocina
    ```
 
 2. **Install the dependencies:**
@@ -36,6 +36,12 @@ Follow these steps to set up and run the application locally.
   ```bash
   npm install
   ```
+
+  using yarn:
+  ```
+  yarn install
+  ```
+
 
 ## Configuration
 
@@ -56,9 +62,15 @@ Create a `.env` file in the root directory ad add the following enviroment varia
 ## Running the Application
 
 1. **Start the development server:**
+
   using npm
   ```bash
   npm run start:dev
+  ```
+
+   using yarn:
+  ```
+  yarn start:dev
   ```
   
   The server will start on the port `http://localhost:3030/api/v2`
