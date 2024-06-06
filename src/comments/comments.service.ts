@@ -4,10 +4,10 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from './entities/comment.entity';
 import { Repository } from 'typeorm';
-import { User } from 'src/users/entities/user.entity';
-import { Article } from 'src/articles/entities/article.entity';
-import { Recipe } from 'src/recipes/entities/recipe.entity';
-import { IUserActive } from 'src/common/inteface/user-active.interface';
+import { User } from '../users/entities/user.entity';
+import { Article } from '../articles/entities/article.entity';
+import { Recipe } from '../recipes/entities/recipe.entity';
+import { IUserActive } from '../common/inteface/user-active.interface';
 
 @Injectable()
 export class CommentsService {

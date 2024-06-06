@@ -1,6 +1,6 @@
-import { Comment } from "src/comments/entities/comment.entity";
-import { Tag } from "src/tag/entities/tag.entity";
-import { User } from "src/users/entities/user.entity";
+import { Comment } from "../../comments/entities/comment.entity";
+import { Tag } from "../../tag/entities/tag.entity";
+import { User } from "../../users/entities/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()

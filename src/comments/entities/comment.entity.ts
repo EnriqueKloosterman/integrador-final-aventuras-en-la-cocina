@@ -1,7 +1,7 @@
-import { Recipe } from "src/recipes/entities/recipe.entity";
+import { Recipe } from "../../recipes/entities/recipe.entity";
 import { User } from "../../users/entities/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Article } from "src/articles/entities/article.entity";
+import { Article } from "../../articles/entities/article.entity";
 
 @Entity()
 export class Comment {

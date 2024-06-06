@@ -1,4 +1,4 @@
-import { Recipe } from "src/recipes/entities/recipe.entity";
+import { Recipe } from "../../recipes/entities/recipe.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()

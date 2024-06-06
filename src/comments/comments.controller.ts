@@ -3,9 +3,9 @@ import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { ActiveUser } from 'src/common/decorators/active.user.decorator';
-import { Auth } from 'src/auth/decorators/auth.decorator';
-import { Role } from 'src/common/enums/role.enum';
+import { ActiveUser } from '../common/decorators/active.user.decorator';
+import { Auth } from '../auth/decorators/auth.decorator';
+import { Role } from '../common/enums/role.enum';
 import { authPlugins } from 'mysql2';
 
 @ApiTags('Comments')

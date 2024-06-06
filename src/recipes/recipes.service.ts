@@ -4,11 +4,11 @@ import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Recipe } from './entities/recipe.entity';
 import { Repository } from 'typeorm';
-import { User } from 'src/users/entities/user.entity';
-import { Category } from 'src/categories/entities/category.entity';
+import { User } from '../users/entities/user.entity';
+import { Category } from '../categories/entities/category.entity';
 import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
 import { v2 as cloidinary } from 'cloudinary';
-import { IUserActive } from 'src/common/inteface/user-active.interface';
+import { IUserActive } from '../common/inteface/user-active.interface';
 @Injectable()
 export class RecipesService {
   constructor(

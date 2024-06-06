@@ -2,14 +2,14 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, Upl
 import { RecipesService } from './recipes.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
-import { Auth } from 'src/auth/decorators/auth.decorator';
-import { Role } from 'src/common/enums/role.enum';
+import { Auth } from '../auth/decorators/auth.decorator';
+import { Role } from '../common/enums/role.enum';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CustomUploadFileTypeValidator } from 'src/constants/file-upload.validator';
-import { CONSTANTS } from 'src/constants/constants';
-import { ActiveUser } from 'src/common/decorators/active.user.decorator';
+import { CustomUploadFileTypeValidator } from '../constants/file-upload.validator';
+import { CONSTANTS } from '../constants/constants';
+import { ActiveUser } from '../common/decorators/active.user.decorator';
 import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
-import { IUserActive } from 'src/common/inteface/user-active.interface';
+import { IUserActive } from '../common/inteface/user-active.interface';
 import { Recipe } from './entities/recipe.entity';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 

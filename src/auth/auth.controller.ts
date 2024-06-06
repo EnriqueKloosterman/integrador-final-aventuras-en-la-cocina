@@ -3,16 +3,16 @@ import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CustomUploadFileTypeValidator } from 'src/constants/file-upload.validator';
-import { CONSTANTS } from 'src/constants/constants';
+import { CustomUploadFileTypeValidator } from '../constants/file-upload.validator';
+import { CONSTANTS } from '../constants/constants';
 import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
 import { LoginDto } from './dto/login.dto';
-import { AuthGuard } from './guard/auth.guard';
-import { Roles } from './decorators/role.decorator';
-import { RolesGuard } from './guard/roles.guard';
+// import { AuthGuard } from './guard/auth.guard';
+// import { Roles } from './decorators/role.decorator';
+// import { RolesGuard } from './guard/roles.guard';
 import { Role } from '../common/enums/role.enum';
 import { Auth } from './decorators/auth.decorator';
-import { ActiveUser } from 'src/common/decorators/active.user.decorator';
+import { ActiveUser } from '../common/decorators/active.user.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 interface RequestWithUser extends Request {

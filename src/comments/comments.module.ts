@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CommentsController } from './comments.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'src/users/entities/user.entity';
-import { Recipe } from 'src/recipes/entities/recipe.entity';
+import { User } from '../users/entities/user.entity';
+import { Recipe } from '../recipes/entities/recipe.entity';
 import { Comment } from './entities/comment.entity';
-import { Article } from 'src/articles/entities/article.entity';
+import { Article } from '../articles/entities/article.entity';
 
 @Module({
   imports: [

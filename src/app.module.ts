@@ -8,12 +8,13 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TagModule } from './tag/tag.module';
 import { AuthModule } from './auth/auth.module';
-import { CloudinaryProvider } from 'cloudinary/cloudinary.provider';
+import { CloudinaryProvider } from '../cloudinary/cloudinary.provider';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot({
+    TypeOrmModule.forRoot(
+      {
       type: 'mysql',
       host: process.env.DATABASE_HOST,
       port: 3306,
@@ -22,7 +23,8 @@ import { CloudinaryProvider } from 'cloudinary/cloudinary.provider';
       database: process.env.DATABASE_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
-    }),
+    }
+  ),
     UsersModule, 
     RecipesModule, 
     CommentsModule, 

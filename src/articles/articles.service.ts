@@ -13,7 +13,7 @@ import { User } from '../users/entities/user.entity';
 import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
 import { v2 as cloudinary } from 'cloudinary';
 import { Tag } from '../tag/entities/tag.entity';
-import { IUserActive } from 'src/common/inteface/user-active.interface';
+import { IUserActive } from '../common/inteface/user-active.interface';
 @Injectable()
 export class ArticlesService {
   constructor(
@@ -67,10 +67,10 @@ export class ArticlesService {
     if (article) throw new BadRequestException('Title already exists');
 
     const newArticle = new Article();
-    (newArticle.title = createArticleDto.title),
-      (newArticle.tag = await this.tagRepository.findOne({
+    newArticle.title = createArticleDto.title,
+    newArticle.tag = await this.tagRepository.findOne({
         where: { tagId: createArticleDto.tagId },
-      }));
+      });
     newArticle.article = JSON.stringify(createArticleDto.article);
     newArticle.image = imageUrl;
     newArticle.user = user.userId;

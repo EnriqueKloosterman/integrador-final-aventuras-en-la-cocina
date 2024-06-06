@@ -1,8 +1,8 @@
-import { Article } from "src/articles/entities/article.entity";
-import { Role } from "src/common/enums/role.enum";
-import { Comment } from "src/comments/entities/comment.entity";
-import { Recipe } from "src/recipes/entities/recipe.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Article } from "../../articles/entities/article.entity";
+import { Role } from "../../common/enums/role.enum";
+import { Comment } from "../../comments/entities/comment.entity";
+import { Recipe } from "../../recipes/entities/recipe.entity";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 enum UserRole {
     ADMIN = 'admin',

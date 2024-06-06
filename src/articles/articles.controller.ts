@@ -18,14 +18,14 @@ import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CustomUploadFileTypeValidator } from 'src/constants/file-upload.validator';
-import { CONSTANTS } from 'src/constants/constants';
+import { CustomUploadFileTypeValidator } from '../constants/file-upload.validator';
+import { CONSTANTS } from '../constants/constants';
 import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
-import { Auth } from 'src/auth/decorators/auth.decorator';
-import { Role } from 'src/common/enums/role.enum';
-import { ActiveUser } from 'src/common/decorators/active.user.decorator';
+import { Auth } from '../auth/decorators/auth.decorator';
+import { Role } from '../common/enums/role.enum';
+import { ActiveUser } from '../common/decorators/active.user.decorator';
 import { Article } from './entities/article.entity';
-import { IUserActive } from 'src/common/inteface/user-active.interface';
+import { IUserActive } from '../common/inteface/user-active.interface';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Articles')
