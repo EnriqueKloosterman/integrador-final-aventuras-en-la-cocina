@@ -6,7 +6,6 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ActiveUser } from '../common/decorators/active.user.decorator';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from '../common/enums/role.enum';
-import { authPlugins } from 'mysql2';
 
 @ApiTags('Comments')
 @Controller('comments')
@@ -22,7 +21,7 @@ export class CommentsController {
       throw new HttpException('User and commnet data required', HttpStatus.BAD_REQUEST)
     }
     try {
-      const newComment = await this.commentsService.create( createCommentDto, articleId, user);
+      const newComment = await this.commentsService.create( createCommentDto, user, articleId);
       return newComment
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
@@ -38,9 +37,11 @@ export class CommentsController {
       throw new HttpException('User and commnet data required', HttpStatus.BAD_REQUEST)
     }
     try {
-      const newComment = await this.commentsService.create( createCommentDto, recipeId, user);
-      return newComment
+      const newComment = await this.commentsService.create(createCommentDto, user, undefined, recipeId);
+      return newComment 
     } catch (error) {
+      console.log(error);
+      
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
     }
   }

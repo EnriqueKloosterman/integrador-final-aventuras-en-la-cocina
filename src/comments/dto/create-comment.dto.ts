@@ -11,6 +11,4 @@ export class CreateCommentDto {
     @IsString()
     @IsOptional()
     recipeId?: string;  
-
-
 }

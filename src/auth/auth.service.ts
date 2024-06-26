@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { UsersService } from '../users/users.service';
@@ -36,33 +36,10 @@ export class AuthService {
       console.error('Error handling image upload:', error);
       throw new Error('Image upload failed');
     }
-    // return new Promise<CloudinaryResponse>((resolve, reject) => {
-    //   const uploadStream = cloudinary.uploader.upload_stream(
-    //     (error, result) => {
-    //       if(error) return reject (error);
-    //       if(result && result.url){
-    //         console.log('image uploaded succesfully. URL: ', result.url);
-    //         this.register(createAuthDto.userName, createAuthDto.userLastName, createAuthDto.userEmail, createAuthDto.userPassword, result.url)
-    //         .then(() => {
-    //           resolve(result)
-    //         })
-    //         .catch((error) => {
-    //           reject(error)
-    //         })
-    //       } else {
-    //         console.error('image upload failed. Error: ', error);
-    //         reject(new Error('image upload failed'));
-    //       }
-    //     }
-    //   )
-    //   uploadStream.on('finish', () => { /**/ });
-    //   uploadStream.end(image.buffer)
-    // })
   }
 
 
   async register(userName: string, userLastName: string, userEmail: string, userPassword: string, imageUrl: string) {
-    // 
     try {
       const user = await this.usersService.findOneByEmail(userEmail);
       if (user) {

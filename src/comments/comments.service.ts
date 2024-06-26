@@ -7,7 +7,6 @@ import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Article } from '../articles/entities/article.entity';
 import { Recipe } from '../recipes/entities/recipe.entity';
-import { IUserActive } from '../common/inteface/user-active.interface';
 
 @Injectable()
 export class CommentsService {
@@ -22,37 +21,42 @@ export class CommentsService {
     private recipeRepository: Repository<Recipe>
   ){}
 
-  async create(createCommentDto: CreateCommentDto, user: any, articleId?: string, recipeId?: string){
+  async create(createCommentDto: CreateCommentDto, user: any, articleId?: string, recipeId?: string) {
     const { comment } = createCommentDto;
 
-    if(!articleId && !recipeId) throw new BadRequestException('Article or Recipe is required');
-    
+    if (!recipeId && !articleId) {
+        throw new BadRequestException('Article or Recipe is required');
+    }
+
     const newComment = new Comment();
     newComment.comment = comment;
     newComment.user = user;
 
-    if(articleId){
-      const article = await this.articleRepository.findOne({
-        where: { articleId }
-      })
-      if(!article) throw new BadRequestException('Article not found');
-      newComment.article = article;
+    if (recipeId) {
+        const recipe = await this.recipeRepository.findOne({ where: { recipeId } });
+        if (!recipe) {
+            throw new BadRequestException('Recipe not found');
+        }
+        newComment.recipe = recipe;
     }
 
-    if(recipeId){
-      const recipe = await this.recipeRepository.findOne({
-        where: { recipeId }
-      })
-      if(!recipe) throw new BadRequestException('Recipe not found');
-      newComment.recipe = recipe;
+    if (articleId) {
+        const article = await this.articleRepository.findOne({ where: { articleId } });
+        if (!article) {
+            throw new BadRequestException('Article not found');
+        }
+        newComment.article = article;
     }
+
     try {
-      await this.comentRepository.save(newComment);
+        await this.comentRepository.save(newComment);
     } catch (error) {
-      throw new BadRequestException(error.message, 'Comment creation failed');
+        throw new BadRequestException(error.message, 'Comment creation failed');
     }
+    
     return newComment;
-  }
+}
+
 
   async findAllCommentsByArticle(articleId: string) {
     const article =  await this.articleRepository.findOne({
@@ -74,6 +78,7 @@ export class CommentsService {
       comment: comment.comment,
       user: {
         name: comment.user.userName,
+        lastName: comment.user.userLastName,
         image: comment.user.image
       }
     }));
