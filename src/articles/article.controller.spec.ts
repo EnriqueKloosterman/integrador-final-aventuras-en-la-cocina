@@ -3,6 +3,8 @@ import { ArticlesController } from './articles.controller';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { Response } from 'express';
+
+
 describe('ArticleController', () => {
   let controller: ArticlesController;
   let service: ArticlesService;
@@ -23,8 +25,9 @@ describe('ArticleController', () => {
       tagId: 1,
       userId: '1'
     };
-    // Aquí deberías agregar la lógica para eliminar el artículo
-    // y las expectativas de la prueba.
+    
+    // agregar la lógica para eliminar el artículo
+    
   });
   it('deberia manejar el error al intentar eliminar un articulo', async () => {
     const articleId = 'invalid_id';
