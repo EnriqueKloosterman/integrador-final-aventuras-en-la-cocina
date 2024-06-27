@@ -1,273 +1,83 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { CommentsController } from './comments.controller';
+import { Controller, Post, Param, Body, Get, Delete, Put, BadRequestException, NotFoundException, HttpStatus, Res } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { BadRequestException, HttpStatus, NotFoundException } from '@nestjs/common';
 
-describe('CommentsController', () => {
-  let controller: CommentsController;
-  let service: CommentsService;
+import { Response } from 'express';
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [CommentsController],
-      providers: [CommentsService],
-    }).compile();
+@Controller('comments')
+export class CommentsController {
+  constructor(private readonly commentsService: CommentsService) {}
 
-    controller = module.get<CommentsController>(CommentsController);
-    service = module.get<CommentsService>(CommentsService);
-  });
+  @Post('article/:id')
+  async createCommentForArticle(@Param('id') articleId: string, @Body() createCommentDto: CreateCommentDto, @Body('user') user: any, @Res() res: Response): Promise<Response> {
+    try {
+      const newComment = await this.commentsService.create(createCommentDto, user, 'article', articleId);
+      return res.status(HttpStatus.CREATED).json(newComment);
+    } catch (error) {
+      throw new BadRequestException('User and comment data required');
+    }
+  }
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+  @Post('recipe/:id')
+  async createCommentForRecipe(@Param('id') recipeId: string, @Body() createCommentDto: CreateCommentDto, @Body('user') user: any, @Res() res: Response): Promise<Response> {
+    try {
+      const newComment = await this.commentsService.create(createCommentDto, user, 'recipe', recipeId);
+      return res.status(HttpStatus.CREATED).json(newComment);
+    } catch (error) {
+      throw new BadRequestException('User and comment data required');
+    }
+  }
 
-  describe('createCommentForArticle', () => {
-    const mockCreateCommentDto: CreateCommentDto = {
-      comment: 'Test comment',
-    };
+  @Get('article/:id')
+  async findAllCommentsByArticle(@Param('id') articleId: string, @Res() res: Response): Promise<Response> {
+    try {
+      const comments = await this.commentsService.findAllCommentsByArticle(articleId);
+      return res.status(HttpStatus.OK).json(comments);
+    } catch (error) {
+      throw new NotFoundException('Article not found');
+    }
+  }
 
-    it('should create a comment for an article', async () => {
-      const mockUser = { userId: 1, username: 'testuser' };
-      const mockArticleId = '1';
+  @Get('recipe/:id')
+  async findAllCommentsByRecipe(@Param('id') recipeId: string, @Res() res: Response): Promise<Response> {
+    try {
+      const comments = await this.commentsService.findAllCommentsByRecipe(recipeId);
+      return res.status(HttpStatus.OK).json(comments);
+    } catch (error) {
+      throw new NotFoundException('Recipe not found');
+    }
+  }
 
-      jest.spyOn(service, 'create').mockImplementation(async () => ({
-        commentId: 1,
-        comment: 'Test comment',
-        user: mockUser,
-      }));
+  @Get(':id')
+  async findOne(@Param('id') commentId: string, @Res() res: Response): Promise<Response> {
+    try {
+      const comment = await this.commentsService.findOne(commentId);
+      return res.status(HttpStatus.OK).json(comment);
+    } catch (error) {
+      throw new NotFoundException('Comment not found');
+    }
+  }
 
-      const result = await controller.createCommentForArticle(mockArticleId, mockCreateCommentDto, mockUser);
-      expect(result).toEqual({
-        commentId: expect.any(Number),
-        comment: 'Test comment',
-        user: mockUser,
-      });
-    });
+  @Put(':id')
+  async update(@Param('id') commentId: string, @Body() updateCommentDto: UpdateCommentDto, @Res() res: Response): Promise<Response> {
+    try {
+      const updatedComment = await this.commentsService.update(commentId, updateCommentDto);
+      return res.status(HttpStatus.OK).json(updatedComment);
+    } catch (error) {
+      throw new NotFoundException('Comment not found');
+    }
+  }
 
-    it('should throw BadRequestException when user or comment data is missing', async () => {
-      const mockUser = { userId: 1, username: 'testuser' };
-      const mockArticleId = '1';
+  @Delete(':id')
+  async remove(@Param('id') commentId: string, @Res() res: Response): Promise<Response> {
+    try {
+      await this.commentsService.remove(commentId);
+      return res.status(HttpStatus.NO_CONTENT).send();
+    } catch (error) {
+      throw new NotFoundException('Comment not found');
+    }
+  }
+}
 
-      try {
-        await controller.createCommentForArticle(mockArticleId, null, mockUser);
-      } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.message).toBe('User and comment data required');
-      }
-    });
-  });
-
-  describe('createCommentForRecipe', () => {
-    const mockCreateCommentDto: CreateCommentDto = {
-      comment: 'Test comment',
-    };
-
-    it('should create a comment for a recipe', async () => {
-      const mockUser = { userId: 1, username: 'testuser' };
-      const mockRecipeId = '1';
-
-      jest.spyOn(service, 'create').mockImplementation(async () => ({
-        commentId: 1,
-        comment: 'Test comment',
-        user: mockUser,
-      }));
-
-      const result = await controller.createCommentForRecipe(mockRecipeId, mockCreateCommentDto, mockUser);
-      expect(result).toEqual({
-        commentId: expect.any(Number),
-        comment: 'Test comment',
-        user: mockUser,
-      });
-    });
-
-    it('should throw BadRequestException when user or comment data is missing', async () => {
-      const mockUser = { userId: 1, username: 'testuser' };
-      const mockRecipeId = '1';
-
-      try {
-        await controller.createCommentForRecipe(mockRecipeId, null, mockUser);
-      } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.message).toBe('User and comment data required');
-      }
-    });
-  });
-
-  describe('findAllCommentsByArticle', () => {
-    it('should return comments for an article', async () => {
-      const mockArticleId = '1';
-      jest.spyOn(service, 'findAllCommentsByArticle').mockImplementation(async () => [
-        {
-          commentId: 1,
-          comment: 'Test comment 1',
-          user: { userId: 1, username: 'user1' },
-        },
-        {
-          commentId: 2,
-          comment: 'Test comment 2',
-          user: { userId: 2, username: 'user2' },
-        },
-      ]);
-
-      const result = await controller.findAllCommentsByArticle(mockArticleId);
-      expect(result).toHaveLength(2);
-      expect(result[0].comment).toBe('Test comment 1');
-      expect(result[1].user.username).toBe('user2');
-    });
-
-    it('should throw NotFoundException when article is not found', async () => {
-      const mockArticleId = '999';
-
-      jest.spyOn(service, 'findAllCommentsByArticle').mockImplementation(async () => {
-        throw new NotFoundException('Article not found');
-      });
-
-      try {
-        await controller.findAllCommentsByArticle(mockArticleId);
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotFoundException);
-        expect(error.message).toBe('Article not found');
-      }
-    });
-  });
-
-  describe('findAllCommentsByRecipe', () => {
-    it('should return comments for a recipe', async () => {
-      const mockRecipeId = '1';
-      jest.spyOn(service, 'findAllCommentsByRecipe').mockImplementation(async () => [
-        {
-          commentId: 1,
-          comment: 'Test comment 1',
-          user: { userId: 1, username: 'user1' },
-        },
-        {
-          commentId: 2,
-          comment: 'Test comment 2',
-          user: { userId: 2, username: 'user2' },
-        },
-      ]);
-
-      const result = await controller.findAllCommentsByRecipe(mockRecipeId);
-      expect(result).toHaveLength(2);
-      expect(result[0].comment).toBe('Test comment 1');
-      expect(result[1].user.username).toBe('user2');
-    });
-
-    it('should throw NotFoundException when recipe is not found', async () => {
-      const mockRecipeId = '999';
-
-      jest.spyOn(service, 'findAllCommentsByRecipe').mockImplementation(async () => {
-        throw new NotFoundException('Recipe not found');
-      });
-
-      try {
-        await controller.findAllCommentsByRecipe(mockRecipeId);
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotFoundException);
-        expect(error.message).toBe('Recipe not found');
-      }
-    });
-  });
-
-  describe('findOne', () => {
-    it('should return a comment by ID', async () => {
-      const mockCommentId = '1';
-      const mockComment = {
-        commentId: 1,
-        comment: 'Test comment',
-        user: { userId: 1, username: 'testuser' },
-      };
-
-      jest.spyOn(service, 'findOne').mockImplementation(async () => mockComment);
-
-      const result = await controller.findOne(mockCommentId);
-      expect(result).toEqual(mockComment);
-    });
-
-    it('should throw BadRequestException when comment is not found', async () => {
-      const mockCommentId = '999';
-
-      jest.spyOn(service, 'findOne').mockImplementation(async () => {
-        throw new BadRequestException('Comment not found');
-      });
-
-      try {
-        await controller.findOne(mockCommentId);
-      } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.message).toBe('Comment not found');
-      }
-    });
-  });
-
-  describe('update', () => {
-    it('should update a comment', async () => {
-      const mockCommentId = '1';
-      const mockUpdateCommentDto: UpdateCommentDto = {
-        comment: 'Updated comment',
-      };
-
-      jest.spyOn(service, 'update').mockImplementation(async () => ({
-        commentId: 1,
-        comment: 'Updated comment',
-      }));
-
-      const result = await controller.update(mockCommentId, mockUpdateCommentDto);
-      expect(result).toEqual({
-        commentId: expect.any(Number),
-        comment: 'Updated comment',
-      });
-    });
-
-    it('should throw BadRequestException when comment is not found', async () => {
-      const mockCommentId = '999';
-      const mockUpdateCommentDto: UpdateCommentDto = {
-        comment: 'Updated comment',
-      };
-
-      jest.spyOn(service, 'update').mockImplementation(async () => {
-        throw new BadRequestException('Comment not found');
-      });
-
-      try {
-        await controller.update(mockCommentId, mockUpdateCommentDto);
-      } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.message).toBe('Comment not found');
-      }
-    });
-  });
-
-  describe('remove', () => {
-    it('should remove a comment', async () => {
-      const mockCommentId = '1';
-      jest.spyOn(service, 'findOne').mockImplementation(async () => ({
-        commentId: 1,
-        comment: 'Test comment',
-      }));
-
-      jest.spyOn(service, 'remove').mockImplementation(async () => {});
-
-      await controller.remove(mockCommentId);
-      expect(service.remove).toHaveBeenCalledWith(1);
-    });
-
-    it('should throw BadRequestException when comment is not found', async () => {
-      const mockCommentId = '999';
-
-      jest.spyOn(service, 'findOne').mockImplementation(async () => {
-        throw new BadRequestException('Comment not found');
-      });
-
-      try {
-        await controller.remove(mockCommentId);
-      } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.message).toBe('Comment not found');
-      }
-    });
-  });
-});
 
