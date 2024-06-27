@@ -1,115 +1,85 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { TagController } from './tag.controller';
+import { TagService } from './tag.service';
+import { UpdateTagDto } from './dto/update-tag.dto';
+import { Tag } from './entities/tag.entity';
 import { Response } from 'express';
-import { User } from './entities/user.entity';
 
-describe('UsersController', () => {
-  let controller: UsersController;
-  let service: UsersService;
+describe('TagController', () => {
+  let controller: TagController;
+  let service: TagService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [UsersController],
-      providers: [UsersService],
+      controllers: [TagController],
+      providers: [TagService],
     }).compile();
 
-    controller = module.get<UsersController>(UsersController);
-    service = module.get<UsersService>(UsersService);
+    controller = module.get<TagController>(TagController);
+    service = module.get<TagService>(TagService);
   });
 
-  it('debería obtener todos los usuarios', async () => {
-    const users: User[] = [
-      {
-        userId: 1,
-        userName: 'John',
-        userLastName: 'Doe',
-        userEmail: 'john.doe@example.com',
-        userPassword: 'password123',
-        image: 'image.jpg',
-      },
-      {
-        userId: 2,
-        userName: 'Jane',
-        userLastName: 'Doe',
-        userEmail: 'jane.doe@example.com',
-        userPassword: 'password123',
-        image: 'image.jpg',
-      },
-    ];
-
-    jest.spyOn(service, 'findAll').mockResolvedValue(users);
-
-    const result = await controller.findAll();
-    expect(result).toEqual(users);
-  });
-
-  it('debería actualizar un usuario existente', async () => {
-    const userId = 1;
-    const updateUser: UpdateUserDto = {
-      userName: 'usuarioActualizado',
-      userPassword: 'newpassword123',
-      userEmail: 'usuarioactualizado@example.com',
-      userLastName: 'Usuario Actualizado',
-      image: 'imagen-actualizada.jpg'
+  it('debería actualizar una etiqueta existente', async () => {
+    const tagId = '1';
+    const updateTag: UpdateTagDto = {
+      tag: 'Etiqueta Actualizada'
     };
-    const updatedUser: User = {
-      userId: 1,
-      ...updateUser
+    const updatedTag: Tag = {
+      tagId: 1,
+      tag: 'Etiqueta Actualizada',
+      article: null // Asegúrate de agregar todas las propiedades necesarias de Tag
     };
 
-    jest.spyOn(service, 'update').mockResolvedValue(updatedUser);
+    jest.spyOn(service, 'update').mockResolvedValue(updatedTag);
     const res: Partial<Response> = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
     };
-    await controller.update(userId.toString(), updateUser, res as Response);
+
+    await controller.update(tagId, updateTag, res as Response);
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(updatedUser);
+    expect(res.json).toHaveBeenCalledWith(updatedTag);
   });
 
-  it('debería manejar el error al intentar actualizar un usuario', async () => {
-    const updateUser: UpdateUserDto = {
-      userName: 'usuarioActualizado',
-      userPassword: 'newpassword123',
-      userEmail: 'usuarioactualizado@example.com',
-      userLastName: 'Usuario Actualizado',
-      image: 'imagen-actualizada.jpg'
+  it('debería manejar el error al intentar actualizar una etiqueta', async () => {
+    const updateTag: UpdateTagDto = {
+      tag: 'Etiqueta Actualizada'
     };
 
-    jest.spyOn(service, 'update').mockRejectedValue(new Error('usuario no encontrado'));
+    jest.spyOn(service, 'update').mockRejectedValue(new Error('etiqueta no encontrada'));
     const res: Partial<Response> = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
     };
-    await controller.update('1', updateUser, res as Response);
+
+    await controller.update('1', updateTag, res as Response);
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ message: 'usuario no encontrado' });
+    expect(res.json).toHaveBeenCalledWith({ message: 'etiqueta no encontrada' });
   });
 
-  it('debería eliminar un usuario existente', async () => {
-    const userId = 1;
+  it('debería eliminar una etiqueta existente', async () => {
+    const tagId = '1';
     jest.spyOn(service, 'remove').mockResolvedValue(undefined);
     const res: Partial<Response> = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
     };
-    await controller.remove(userId.toString(), res as Response);
+
+    await controller.remove(tagId, res as Response);
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Usuario eliminado exitosamente' });
+    expect(res.json).toHaveBeenCalledWith({ message: 'Etiqueta eliminada exitosamente' });
   });
 
-  it('debería manejar el error al intentar eliminar un usuario', async () => {
-    const userId = 'invalid_id';
-    jest.spyOn(service, 'remove').mockRejectedValue(new Error('Error al eliminar el usuario'));
+  it('debería manejar el error al intentar eliminar una etiqueta', async () => {
+    const tagId = 'invalid_id';
+    jest.spyOn(service, 'remove').mockRejectedValue(new Error('Error al eliminar la etiqueta'));
     const res: Partial<Response> = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
     };
-    await controller.remove(userId, res as Response);
+
+    await controller.remove(tagId, res as Response);
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Error al eliminar el usuario' });
+    expect(res.json).toHaveBeenCalledWith({ message: 'Error al eliminar la etiqueta' });
   });
 });
