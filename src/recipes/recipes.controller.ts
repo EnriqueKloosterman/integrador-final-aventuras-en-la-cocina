@@ -83,13 +83,11 @@ export class RecipesController {
   @Patch('update/recipe/:id')
   @Auth(Role.USER)
   @UsePipes(new ValidationPipe({ transform: true}))
-  async update(@Param('id') id: string, @Body() updateRecipeDto: UpdateRecipeDto | string, @ActiveUser() user: IUserActive): Promise<Recipe> {
+  async update(@Param('id') id: string, @Body() updateRecipeDto: UpdateRecipeDto , @ActiveUser() user: IUserActive): Promise<Recipe> {
+
     try {
-      if(typeof updateRecipeDto === 'string'){
-        updateRecipeDto = {instructions: updateRecipeDto}
-      }
-      const recipe = await this.recipesService.update(id, user, updateRecipeDto,); 
-      return recipe
+      const recipe = await this.recipesService.update(id, user, updateRecipeDto);
+      return recipe;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

@@ -44,34 +44,64 @@ export class RecipesService {
       uplaodStream.end(image.buffer);
     })
   }
+  async create(createRecipeDto: CreateRecipeDto, user: any, imageUrl: string): Promise<Recipe> {
+    const existingRecipe = await this.recipeRepository.findOne({
+      where: { title: createRecipeDto.title }
+    });
 
-  async create(createRecipeDto: CreateRecipeDto, user: any, imageUrl: string) {
-    const recipe = await this.recipeRepository.findOne({
-      where: {
-        title: createRecipeDto.title
-      }
-    })
-    if(recipe) throw new BadRequestException('Recipe already exists')
-    
-    const newRecipe = new Recipe()
-    newRecipe.title = createRecipeDto.title
-    newRecipe.description = JSON.stringify(createRecipeDto.description)
-    newRecipe.instructions = JSON.stringify(createRecipeDto.instructions)
-    newRecipe.ingredients = JSON.stringify(createRecipeDto.ingredients)
-    newRecipe.category = await this.categoryRepository.findOne({where: {categoryId: createRecipeDto.categoryId}})
-    newRecipe.image = imageUrl
-    newRecipe.user = user
-
-
-    try{
-      await this.recipeRepository.save(newRecipe)
-    } catch(error){
-      console.log(error.message, error);
-      
-      throw new Error('Recipe not saved')
+    if (existingRecipe) {
+      throw new BadRequestException('Recipe already exists');
     }
 
+    const newRecipe = new Recipe();
+    newRecipe.title = createRecipeDto.title;
+    newRecipe.description = createRecipeDto.description;
+    newRecipe.instructions = createRecipeDto.instructions;
+    newRecipe.ingredients = createRecipeDto.ingredients;
+    newRecipe.category = await this.categoryRepository.findOne({
+      where: { categoryId: createRecipeDto.categoryId }
+    });
+    newRecipe.image = imageUrl;
+    newRecipe.user = user;
+
+    try {
+      await this.recipeRepository.save(newRecipe);
+      return newRecipe;
+    } catch (error) {
+      console.error('Error saving recipe:', error);
+      throw new BadRequestException('Recipe not saved');
+    }
   }
+
+  //! **********************************************
+  // async create(createRecipeDto: CreateRecipeDto, user: any, imageUrl: string) {
+  //   const recipe = await this.recipeRepository.findOne({
+  //     where: {
+  //       title: createRecipeDto.title
+  //     }
+  //   })
+  //   if(recipe) throw new BadRequestException('Recipe already exists')
+    
+  //   const newRecipe = new Recipe()
+  //   newRecipe.title = createRecipeDto.title
+  //   newRecipe.description = JSON.stringify(createRecipeDto.description)
+  //   newRecipe.instructions = JSON.stringify(createRecipeDto.instructions)
+  //   newRecipe.ingredients = JSON.stringify(createRecipeDto.ingredients)
+  //   newRecipe.category = await this.categoryRepository.findOne({where: {categoryId: createRecipeDto.categoryId}})
+  //   newRecipe.image = imageUrl
+  //   newRecipe.user = user
+
+
+  //   try{
+  //     await this.recipeRepository.save(newRecipe)
+  //   } catch(error){
+  //     console.log(error.message, error);
+      
+  //     throw new Error('Recipe not saved')
+  //   }
+
+  // }
+  //! **********************************************
 
   async findAll(): Promise<Recipe[]> {
     const recipes = await this.recipeRepository.find({
@@ -139,11 +169,13 @@ export class RecipesService {
       throw new BadRequestException('Recipe not found');
     }
   
-
     recipe.title = updateRecipeDto.title;
-    recipe.description = JSON.stringify(updateRecipeDto.description);
-    recipe.instructions = JSON.stringify(updateRecipeDto.instructions);
-    recipe.ingredients = JSON.stringify(updateRecipeDto.ingredients);
+    // recipe.description = JSON.stringify(updateRecipeDto.description);
+    recipe.description = updateRecipeDto.description;
+    // recipe.instructions = JSON.stringify(updateRecipeDto.instructions);
+    recipe.instructions = updateRecipeDto.instructions;
+    // recipe.ingredients = JSON.stringify(updateRecipeDto.ingredients);
+    recipe.ingredients = updateRecipeDto.ingredients;
     recipe.category = await this.categoryRepository.findOne({ where: { categoryId: updateRecipeDto.categoryId } });
   
     try {
@@ -153,6 +185,8 @@ export class RecipesService {
       throw new BadRequestException('Failed to update recipe');
     }
   }
+
+
 
   async remove(id: string): Promise<void> {
     const recipe = await this.recipeRepository.findOne({
