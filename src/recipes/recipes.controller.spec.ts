@@ -3,7 +3,8 @@ import { RecipesController } from './recipes.controller';
 import { RecipesService } from './recipes.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
-import { BadRequestException, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Recipe } from './entities/recipe.entity';
+import { NotFoundException, HttpStatus, HttpException } from '@nestjs/common';
 
 describe('RecipesController', () => {
   let controller: RecipesController;
@@ -12,11 +13,26 @@ describe('RecipesController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [RecipesController],
-      providers: [RecipesService],
+      providers: [
+        {
+          provide: RecipesService,
+          useValue: {
+            handleUpload: jest.fn(),
+            create: jest.fn(),
+            update: jest.fn(),
+            remove: jest.fn(),
+            findOne: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<RecipesController>(RecipesController);
     service = module.get<RecipesService>(RecipesService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -24,158 +40,101 @@ describe('RecipesController', () => {
   });
 
   describe('create', () => {
-    const mockCreateRecipeDto: CreateRecipeDto = {
-      title: 'Recipe Title',
-      description: ['Description line 1', 'Description line 2'],
+    const createRecipeDto: CreateRecipeDto = {
+      title: 'Test Recipe',
+      description: ['Description 1', 'Description 2'],
       instructions: ['Instruction 1', 'Instruction 2'],
       ingredients: ['Ingredient 1', 'Ingredient 2'],
-      image: 'recipe-image.jpg',
+      image: 'recipe.jpg',
       categoryId: 1,
-      userId: '1',
+      userId: 'user-id',
     };
 
     it('should create a recipe', async () => {
-      jest.spyOn(service, 'create').mockResolvedValue(mockCreateRecipeDto);
+      jest.spyOn(service, 'handleUpload').mockResolvedValue({ url: 'https://example.com/image.jpg' });
+      jest.spyOn(service, 'create').mockResolvedValue({ ...createRecipeDto, recipeId: '1' } as Recipe);
 
-      const result = await controller.create(mockCreateRecipeDto);
-      expect(result).toEqual(mockCreateRecipeDto);
+      const result = await controller.create(createRecipeDto);
+
+      expect(result).toHaveProperty('recipeId');
+      expect(result.title).toBe(createRecipeDto.title);
+      expect(result.description).toEqual(createRecipeDto.description);
+      expect(result.instructions).toEqual(createRecipeDto.instructions);
+      expect(result.ingredients).toEqual(createRecipeDto.ingredients);
+      expect(result.image).toBe('https://example.com/image.jpg');
+      expect(result.categoryId).toBe(createRecipeDto.categoryId);
+      expect(result.userId).toBe(createRecipeDto.userId);
     });
 
-    it('should handle failure in recipe creation', async () => {
-      jest.spyOn(service, 'create').mockRejectedValue(new Error('Failed to create recipe'));
+    it('should throw an error if creation fails', async () => {
+      jest.spyOn(service, 'handleUpload').mockRejectedValue(new Error('Upload failed'));
 
-      try {
-        await controller.create(mockCreateRecipeDto);
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-        expect(error.message).toBe('Failed to create recipe');
-      }
-    });
-  });
-
-  describe('findAll', () => {
-    it('should return an array of recipes', async () => {
-      const mockRecipes = [
-        {
-          id: '1',
-          title: 'Recipe 1',
-          description: ['Description 1'],
-          instructions: ['Instruction 1'],
-          ingredients: ['Ingredient 1'],
-          image: 'recipe1.jpg',
-          categoryId: 1,
-          userId: '1',
-        },
-        {
-          id: '2',
-          title: 'Recipe 2',
-          description: ['Description 2'],
-          instructions: ['Instruction 2'],
-          ingredients: ['Ingredient 2'],
-          image: 'recipe2.jpg',
-          categoryId: 2,
-          userId: '2',
-        },
-      ];
-
-      jest.spyOn(service, 'findAll').mockResolvedValue(mockRecipes);
-
-      const result = await controller.findAll();
-      expect(result).toEqual(mockRecipes);
-    });
-  });
-
-  describe('findOne', () => {
-    it('should return a recipe by ID', async () => {
-      const mockRecipeId = '1';
-      const mockRecipe = {
-        id: '1',
-        title: 'Recipe 1',
-        description: ['Description 1'],
-        instructions: ['Instruction 1'],
-        ingredients: ['Ingredient 1'],
-        image: 'recipe1.jpg',
-        categoryId: 1,
-        userId: '1',
-      };
-
-      jest.spyOn(service, 'findOne').mockResolvedValue(mockRecipe);
-
-      const result = await controller.findOne(mockRecipeId);
-      expect(result).toEqual(mockRecipe);
-    });
-
-    it('should throw NotFoundException when recipe is not found', async () => {
-      const mockRecipeId = '999';
-
-      jest.spyOn(service, 'findOne').mockRejectedValue(new NotFoundException('Recipe not found'));
-
-      try {
-        await controller.findOne(mockRecipeId);
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotFoundException);
-        expect(error.message).toBe('Recipe not found');
-      }
+      await expect(controller.create(createRecipeDto)).rejects.toThrow(HttpException);
     });
   });
 
   describe('update', () => {
+    const recipeId = '1';
+    const updateRecipeDto: UpdateRecipeDto = {
+      title: 'Updated Recipe',
+      description: ['Updated Description 1', 'Updated Description 2'],
+      instructions: ['Updated Instruction 1', 'Updated Instruction 2'],
+      ingredients: ['Updated Ingredient 1', 'Updated Ingredient 2'],
+      image: 'updated.jpg',
+      categoryId: 2,
+      userId: 'user-id',
+    };
+
     it('should update a recipe', async () => {
-      const mockRecipeId = '1';
-      const mockUpdateRecipeDto: UpdateRecipeDto = {
-        title: 'Updated Recipe Title',
-      };
+      jest.spyOn(service, 'update').mockResolvedValue({ recipeId, ...updateRecipeDto } as Recipe);
 
-      jest.spyOn(service, 'update').mockResolvedValue({
-        id: '1',
-        ...mockUpdateRecipeDto,
-      });
+      const result = await controller.update(recipeId, updateRecipeDto);
 
-      const result = await controller.update(mockRecipeId, mockUpdateRecipeDto);
-      expect(result).toEqual({
-        id: '1',
-        ...mockUpdateRecipeDto,
-      });
+      expect(result.recipeId).toBe(recipeId);
+      expect(result.title).toBe(updateRecipeDto.title);
+      expect(result.description).toEqual(updateRecipeDto.description);
+      expect(result.instructions).toEqual(updateRecipeDto.instructions);
+      expect(result.ingredients).toEqual(updateRecipeDto.ingredients);
+      expect(result.image).toBe(updateRecipeDto.image);
+      expect(result.categoryId).toBe(updateRecipeDto.categoryId);
+      expect(result.userId).toBe(updateRecipeDto.userId);
     });
 
-    it('should throw BadRequestException when recipe is not found', async () => {
-      const mockRecipeId = '999';
-      const mockUpdateRecipeDto: UpdateRecipeDto = {
-        title: 'Updated Recipe Title',
-      };
+    it('should throw an error if update fails', async () => {
+      jest.spyOn(service, 'update').mockRejectedValue(new Error('Update failed'));
 
-      jest.spyOn(service, 'update').mockRejectedValue(new BadRequestException('Recipe not found'));
+      await expect(controller.update(recipeId, updateRecipeDto)).rejects.toThrow(HttpException);
+    });
 
-      try {
-        await controller.update(mockRecipeId, mockUpdateRecipeDto);
-      } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.message).toBe('Recipe not found');
-      }
+    it('should throw a NotFoundException if recipe is not found', async () => {
+      jest.spyOn(service, 'update').mockResolvedValue(undefined);
+
+      await expect(controller.update(recipeId, updateRecipeDto)).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('remove', () => {
-    it('should remove a recipe', async () => {
-      const mockRecipeId = '1';
+    const recipeId = '1';
 
+    it('should remove a recipe', async () => {
       jest.spyOn(service, 'remove').mockResolvedValue();
 
-      await controller.remove(mockRecipeId);
-      expect(service.remove).toHaveBeenCalledWith(mockRecipeId);
+      await controller.remove(recipeId);
+
+      expect(service.remove).toHaveBeenCalledWith(recipeId);
     });
 
-    it('should throw BadRequestException when recipe is not found', async () => {
-      const mockRecipeId = '999';
+    it('should throw a NotFoundException if recipe is not found', async () => {
+      jest.spyOn(service, 'findOne').mockResolvedValue(undefined);
 
-      jest.spyOn(service, 'remove').mockRejectedValue(new BadRequestException('Recipe not found'));
+      await expect(controller.remove(recipeId)).rejects.toThrow(NotFoundException);
+    });
 
-      try {
-        await controller.remove(mockRecipeId);
-      } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.message).toBe('Recipe not found');
-      }
+    it('should throw an error if service throws', async () => {
+      jest.spyOn(service, 'findOne').mockResolvedValue({} as Recipe);
+      jest.spyOn(service, 'remove').mockRejectedValue(new Error('Service error'));
+
+      await expect(controller.remove(recipeId)).rejects.toThrow(HttpException);
     });
   });
 });

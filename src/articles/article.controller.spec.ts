@@ -4,9 +4,8 @@ import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { Article } from './entities/article.entity';
-import { IUserActive } from '../common/inteface/user-active.interface';
-import { HttpException, HttpStatus } from '@nestjs/common';
-import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
+import { IUserActive } from '../common/interface/user-active.interface';
+import { HttpException } from '@nestjs/common';
 
 describe('ArticlesController', () => {
   let controller: ArticlesController;
@@ -53,10 +52,12 @@ describe('ArticlesController', () => {
         userId: '1',
         userName: 'Test User',
         userLastName: 'Last Name',
-        email: 'test@example.com',
+        userEmail: 'test@example.com', // Ensure userEmail matches the DTO
+        userPassword: 'password123', // Add a sample userPassword
+        image: 'test-image-url', // Add a sample image URL
       };
 
-      const response: CloudinaryResponse = {
+      const response = {
         url: 'test-url',
         message: 'Upload successful',
         name: 'Test File',
@@ -85,7 +86,9 @@ describe('ArticlesController', () => {
         userId: '1',
         userName: 'Test User',
         userLastName: 'Last Name',
-        email: 'test@example.com',
+        userEmail: 'test@example.com', // Ensure userEmail matches the DTO
+        userPassword: 'password123', // Add a sample userPassword
+        image: 'test-image-url', // Add a sample image URL
       };
 
       jest.spyOn(service, 'handleUpload').mockRejectedValue(new Error('Upload failed'));
@@ -121,7 +124,9 @@ describe('ArticlesController', () => {
         userId: '1',
         userName: 'Test User',
         userLastName: 'Last Name',
-        email: 'test@example.com',
+        userEmail: 'test@example.com', // Ensure userEmail matches the DTO
+        userPassword: 'password123', // Add a sample userPassword
+        image: 'test-image-url', // Add a sample image URL
       };
 
       const articles: Article[] = [
@@ -141,7 +146,9 @@ describe('ArticlesController', () => {
         userId: '1',
         userName: 'Test User',
         userLastName: 'Last Name',
-        email: 'test@example.com',
+        userEmail: 'test@example.com', // Ensure userEmail matches the DTO
+        userPassword: 'password123', // Add a sample userPassword
+        image: 'test-image-url', // Add a sample image URL
       };
 
       jest.spyOn(service, 'findAllUserArticles').mockRejectedValue(new Error('Error fetching user articles'));
@@ -180,7 +187,9 @@ describe('ArticlesController', () => {
         userId: '1',
         userName: 'Test User',
         userLastName: 'Last Name',
-        email: 'test@example.com',
+        userEmail: 'test@example.com', // Ensure userEmail matches the DTO
+        userPassword: 'password123', // Add a sample userPassword
+        image: 'test-image-url', // Add a sample image URL
       };
 
       const updatedArticle: Article = { articleId: '1', title: 'Updated Article', article: 'Updated content', image: 'test-image-url', tag: null, user: [], comment: null, createdAt: new Date(), updatedAt: new Date() };
@@ -201,7 +210,9 @@ describe('ArticlesController', () => {
         userId: '1',
         userName: 'Test User',
         userLastName: 'Last Name',
-        email: 'test@example.com',
+        userEmail: 'test@example.com', // Ensure userEmail matches the DTO
+        userPassword: 'password123', // Add a sample userPassword
+        image: 'test-image-url', // Add a sample image URL
       };
 
       jest.spyOn(service, 'update').mockRejectedValue(new Error('Error updating article'));

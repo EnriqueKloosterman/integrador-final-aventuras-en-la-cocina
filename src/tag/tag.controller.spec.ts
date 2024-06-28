@@ -26,7 +26,7 @@ describe('TagController', () => {
     const updatedTag: Tag = {
       tagId: 1,
       tag: 'Etiqueta Actualizada',
-      article: null // Asegúrate de agregar todas las propiedades necesarias de Tag
+      article: null 
     };
 
     jest.spyOn(service, 'update').mockResolvedValue(updatedTag);
