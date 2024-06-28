@@ -1,85 +1,134 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TagController } from './tag.controller';
-import { TagService } from './tag.service';
-import { UpdateTagDto } from './dto/update-tag.dto';
-import { Tag } from './entities/tag.entity';
-import { Response } from 'express';
+import { RecipesController } from './recipes.controller';
+import { RecipesService } from './recipes.service';
+import { CreateRecipeDto } from './dto/create-recipe.dto';
+import { UpdateRecipeDto } from './dto/update-recipe.dto';
+import { Recipe } from './entities/recipe.entity';
+import { NotFoundException, HttpException, HttpStatus } from '@nestjs/common';
 
-describe('TagController', () => {
-  let controller: TagController;
-  let service: TagService;
+describe('RecipesController', () => {
+  let controller: RecipesController;
+  let service: RecipesService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [TagController],
-      providers: [TagService],
+      controllers: [RecipesController],
+      providers: [
+        {
+          provide: RecipesService,
+          useValue: {
+            create: jest.fn(),
+            update: jest.fn(),
+            remove: jest.fn(),
+            findOne: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
-    controller = module.get<TagController>(TagController);
-    service = module.get<TagService>(TagService);
+    controller = module.get<RecipesController>(RecipesController);
+    service = module.get<RecipesService>(RecipesService);
   });
 
-  it('debería actualizar una etiqueta existente', async () => {
-    const tagId = '1';
-    const updateTag: UpdateTagDto = {
-      tag: 'Etiqueta Actualizada'
-    };
-    const updatedTag: Tag = {
-      tagId: 1,
-      tag: 'Etiqueta Actualizada',
-      article: null 
-    };
-
-    jest.spyOn(service, 'update').mockResolvedValue(updatedTag);
-    const res: Partial<Response> = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
-    };
-
-    await controller.update(tagId, updateTag, res as Response);
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(updatedTag);
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('debería manejar el error al intentar actualizar una etiqueta', async () => {
-    const updateTag: UpdateTagDto = {
-      tag: 'Etiqueta Actualizada'
-    };
-
-    jest.spyOn(service, 'update').mockRejectedValue(new Error('etiqueta no encontrada'));
-    const res: Partial<Response> = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
-    };
-
-    await controller.update('1', updateTag, res as Response);
-    expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ message: 'etiqueta no encontrada' });
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
   });
 
-  it('debería eliminar una etiqueta existente', async () => {
-    const tagId = '1';
-    jest.spyOn(service, 'remove').mockResolvedValue(undefined);
-    const res: Partial<Response> = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
+  describe('create', () => {
+    const createRecipeDto: CreateRecipeDto = {
+      title: 'Test Recipe',
+      description: ['Description 1', 'Description 2'],
+      instructions: ['Instruction 1', 'Instruction 2'],
+      ingredients: ['Ingredient 1', 'Ingredient 2'],
+      image: 'recipe.jpg',
+      categoryId: 1,
+      userId: 'user-id',
     };
 
-    await controller.remove(tagId, res as Response);
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Etiqueta eliminada exitosamente' });
+    it('should create a recipe', async () => {
+      const createdRecipe: Recipe = {
+        articleId: '1', // Assuming `recipeId` is of type string in your `Recipe` entity
+        ...createRecipeDto,
+      };
+
+      jest.spyOn(service, 'create').mockResolvedValue(createdRecipe);
+
+      const result = await controller.create(createRecipeDto);
+
+      expect(result).toEqual(createdRecipe);
+    });
+
+    it('should throw an error if creation fails', async () => {
+      jest.spyOn(service, 'create').mockRejectedValue(new Error('Creation failed'));
+
+      await expect(controller.create(createRecipeDto)).rejects.toThrow(HttpException);
+    });
   });
 
-  it('debería manejar el error al intentar eliminar una etiqueta', async () => {
-    const tagId = 'invalid_id';
-    jest.spyOn(service, 'remove').mockRejectedValue(new Error('Error al eliminar la etiqueta'));
-    const res: Partial<Response> = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
+  describe('update', () => {
+    const recipeId = '1';
+    const updateRecipeDto: UpdateRecipeDto = {
+      title: 'Updated Recipe',
+      description: ['Updated Description 1', 'Updated Description 2'],
+      instructions: ['Updated Instruction 1', 'Updated Instruction 2'],
+      ingredients: ['Updated Ingredient 1', 'Updated Ingredient 2'],
+      image: 'updated.jpg',
+      categoryId: 2,
+      userId: 'user-id',
     };
 
-    await controller.remove(tagId, res as Response);
-    expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Error al eliminar la etiqueta' });
+    it('should update a recipe', async () => {
+      const updatedRecipe: Recipe = {
+        articleId: recipeId, // Assuming `recipeId` is of type string in your `Recipe` entity
+        ...updateRecipeDto,
+      };
+
+      jest.spyOn(service, 'update').mockResolvedValue(updatedRecipe);
+
+      const result = await controller.update(recipeId, updateRecipeDto);
+
+      expect(result).toEqual(updatedRecipe);
+    });
+
+    it('should throw an error if update fails', async () => {
+      jest.spyOn(service, 'update').mockRejectedValue(new Error('Update failed'));
+
+      await expect(controller.update(recipeId, updateRecipeDto)).rejects.toThrow(HttpException);
+    });
+
+    it('should throw a NotFoundException if recipe is not found', async () => {
+      jest.spyOn(service, 'update').mockResolvedValue(undefined);
+
+      await expect(controller.update(recipeId, updateRecipeDto)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('remove', () => {
+    const recipeId = '1';
+
+    it('should remove a recipe', async () => {
+      jest.spyOn(service, 'remove').mockResolvedValue();
+
+      await controller.remove(recipeId);
+
+      expect(service.remove).toHaveBeenCalledWith(recipeId);
+    });
+
+    it('should throw a NotFoundException if recipe is not found', async () => {
+      jest.spyOn(service, 'findOne').mockResolvedValue(undefined);
+
+      await expect(controller.remove(recipeId)).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw an error if service throws', async () => {
+      jest.spyOn(service, 'findOne').mockResolvedValue({} as Recipe);
+      jest.spyOn(service, 'remove').mockRejectedValue(new Error('Service error'));
+
+      await expect(controller.remove(recipeId)).rejects.toThrow(HttpException);
+    });
   });
 });

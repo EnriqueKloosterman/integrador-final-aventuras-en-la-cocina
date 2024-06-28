@@ -4,7 +4,7 @@ import { RecipesService } from './recipes.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { Recipe } from './entities/recipe.entity';
-import { NotFoundException, HttpStatus, HttpException } from '@nestjs/common';
+import { NotFoundException, HttpException, HttpStatus } from '@nestjs/common';
 
 describe('RecipesController', () => {
   let controller: RecipesController;
@@ -17,7 +17,6 @@ describe('RecipesController', () => {
         {
           provide: RecipesService,
           useValue: {
-            handleUpload: jest.fn(),
             create: jest.fn(),
             update: jest.fn(),
             remove: jest.fn(),
@@ -51,23 +50,20 @@ describe('RecipesController', () => {
     };
 
     it('should create a recipe', async () => {
-      jest.spyOn(service, 'handleUpload').mockResolvedValue({ url: 'https://example.com/image.jpg' });
-      jest.spyOn(service, 'create').mockResolvedValue({ ...createRecipeDto, recipeId: '1' } as Recipe);
+      const createdRecipe: Recipe = {
+        articleId: '1', // Assuming `recipeId` is of type string in your `Recipe` entity
+        ...createRecipeDto,
+      };
+
+      jest.spyOn(service, 'create').mockResolvedValue(createdRecipe);
 
       const result = await controller.create(createRecipeDto);
 
-      expect(result).toHaveProperty('recipeId');
-      expect(result.title).toBe(createRecipeDto.title);
-      expect(result.description).toEqual(createRecipeDto.description);
-      expect(result.instructions).toEqual(createRecipeDto.instructions);
-      expect(result.ingredients).toEqual(createRecipeDto.ingredients);
-      expect(result.image).toBe('https://example.com/image.jpg');
-      expect(result.categoryId).toBe(createRecipeDto.categoryId);
-      expect(result.userId).toBe(createRecipeDto.userId);
+      expect(result).toEqual(createdRecipe);
     });
 
     it('should throw an error if creation fails', async () => {
-      jest.spyOn(service, 'handleUpload').mockRejectedValue(new Error('Upload failed'));
+      jest.spyOn(service, 'create').mockRejectedValue(new Error('Creation failed'));
 
       await expect(controller.create(createRecipeDto)).rejects.toThrow(HttpException);
     });
@@ -86,18 +82,16 @@ describe('RecipesController', () => {
     };
 
     it('should update a recipe', async () => {
-      jest.spyOn(service, 'update').mockResolvedValue({ recipeId, ...updateRecipeDto } as Recipe);
+      const updatedRecipe: Recipe = {
+        articleId: recipeId, // Assuming `recipeId` is of type string in your `Recipe` entity
+        ...updateRecipeDto,
+      };
+
+      jest.spyOn(service, 'update').mockResolvedValue(updatedRecipe);
 
       const result = await controller.update(recipeId, updateRecipeDto);
 
-      expect(result.recipeId).toBe(recipeId);
-      expect(result.title).toBe(updateRecipeDto.title);
-      expect(result.description).toEqual(updateRecipeDto.description);
-      expect(result.instructions).toEqual(updateRecipeDto.instructions);
-      expect(result.ingredients).toEqual(updateRecipeDto.ingredients);
-      expect(result.image).toBe(updateRecipeDto.image);
-      expect(result.categoryId).toBe(updateRecipeDto.categoryId);
-      expect(result.userId).toBe(updateRecipeDto.userId);
+      expect(result).toEqual(updatedRecipe);
     });
 
     it('should throw an error if update fails', async () => {
