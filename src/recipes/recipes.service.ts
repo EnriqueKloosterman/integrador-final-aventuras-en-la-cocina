@@ -44,26 +44,48 @@ export class RecipesService {
       uplaodStream.end(image.buffer);
     })
   }
+
   async create(createRecipeDto: CreateRecipeDto, user: any, imageUrl: string): Promise<Recipe> {
     const existingRecipe = await this.recipeRepository.findOne({
       where: { title: createRecipeDto.title }
     });
-
+  
     if (existingRecipe) {
       throw new BadRequestException('Recipe already exists');
     }
-
+  
     const newRecipe = new Recipe();
     newRecipe.title = createRecipeDto.title;
-    newRecipe.description = createRecipeDto.description;
-    newRecipe.instructions = createRecipeDto.instructions;
-    newRecipe.ingredients = createRecipeDto.ingredients;
-    newRecipe.category = await this.categoryRepository.findOne({
-      where: { categoryId: createRecipeDto.categoryId }
-    });
+  
+    try {
+      if (Array.isArray(createRecipeDto.description)) {
+        newRecipe.description = JSON.stringify(createRecipeDto.description);
+      } else {
+        throw new BadRequestException('Description must be an array of strings');
+      }
+  
+      if (Array.isArray(createRecipeDto.instructions)) {
+        newRecipe.instructions = JSON.stringify(createRecipeDto.instructions);
+      } else {
+        throw new BadRequestException('Instructions must be an array of strings');
+      }
+  
+      if (Array.isArray(createRecipeDto.ingredients)) {
+        newRecipe.ingredients = JSON.stringify(createRecipeDto.ingredients);
+      } else {
+        throw new BadRequestException('Ingredients must be an array of strings');
+      }
+    } catch (error) {
+      console.error('Error parsing JSON fields:', error);
+      throw new BadRequestException('Invalid JSON format');
+    }
+    if (typeof imageUrl !== 'string' || !imageUrl.trim()) {
+      throw new BadRequestException('Image URL must be a non-empty string');
+    }
+  
     newRecipe.image = imageUrl;
     newRecipe.user = user;
-
+  
     try {
       await this.recipeRepository.save(newRecipe);
       return newRecipe;
@@ -72,36 +94,7 @@ export class RecipesService {
       throw new BadRequestException('Recipe not saved');
     }
   }
-
-  //! **********************************************
-  // async create(createRecipeDto: CreateRecipeDto, user: any, imageUrl: string) {
-  //   const recipe = await this.recipeRepository.findOne({
-  //     where: {
-  //       title: createRecipeDto.title
-  //     }
-  //   })
-  //   if(recipe) throw new BadRequestException('Recipe already exists')
-    
-  //   const newRecipe = new Recipe()
-  //   newRecipe.title = createRecipeDto.title
-  //   newRecipe.description = JSON.stringify(createRecipeDto.description)
-  //   newRecipe.instructions = JSON.stringify(createRecipeDto.instructions)
-  //   newRecipe.ingredients = JSON.stringify(createRecipeDto.ingredients)
-  //   newRecipe.category = await this.categoryRepository.findOne({where: {categoryId: createRecipeDto.categoryId}})
-  //   newRecipe.image = imageUrl
-  //   newRecipe.user = user
-
-
-  //   try{
-  //     await this.recipeRepository.save(newRecipe)
-  //   } catch(error){
-  //     console.log(error.message, error);
-      
-  //     throw new Error('Recipe not saved')
-  //   }
-
-  // }
-  //! **********************************************
+  
 
   async findAll(): Promise<Recipe[]> {
     const recipes = await this.recipeRepository.find({
@@ -170,12 +163,10 @@ export class RecipesService {
     }
   
     recipe.title = updateRecipeDto.title;
-    // recipe.description = JSON.stringify(updateRecipeDto.description);
-    recipe.description = updateRecipeDto.description;
-    // recipe.instructions = JSON.stringify(updateRecipeDto.instructions);
-    recipe.instructions = updateRecipeDto.instructions;
-    // recipe.ingredients = JSON.stringify(updateRecipeDto.ingredients);
-    recipe.ingredients = updateRecipeDto.ingredients;
+    recipe.description = JSON.stringify(updateRecipeDto.description);
+    recipe.instructions = JSON.stringify(updateRecipeDto.instructions);
+    recipe.ingredients = JSON.stringify(updateRecipeDto.ingredients);
+
     recipe.category = await this.categoryRepository.findOne({ where: { categoryId: updateRecipeDto.categoryId } });
   
     try {

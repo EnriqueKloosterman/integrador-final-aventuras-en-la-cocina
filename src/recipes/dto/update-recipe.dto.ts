@@ -8,16 +8,13 @@ export class UpdateRecipeDto extends PartialType(CreateRecipeDto) {
     title?: string;
 
     @IsArray()
-    // @Transform(({ value }) => value.split('//'))
-    description?: string;
+    description?: string[];
 
     @IsArray()
-    // @Transform(({ value }) => value.split('//'))
-    instructions?: string;
+    instructions?: string[];
 
     @IsArray()
-    // @Transform(({ value }) => value.split('//'))
-    ingredients?: string;
+    ingredients?: string[];
 
     @IsString()
     image?: string;

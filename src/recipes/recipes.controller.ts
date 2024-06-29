@@ -33,12 +33,12 @@ export class RecipesController {
       .addMaxSizeValidator({ maxSize: CONSTANTS.max_bytes_pic_size})
       .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY})
     )image: Express.Multer.File,
-    @Body() createRecipeDto: CreateRecipeDto, @ActiveUser() user: any): Promise<string>{
-      if(!image || !createRecipeDto){
+    @Body() formData: any, /*createRecipeDto: CreateRecipeDto,*/ @ActiveUser() user: any): Promise<string>{
+      if(!image || /*!createRecipeDto*/ !formData){
         throw new HttpException('image and data required', HttpStatus.BAD_REQUEST)
       }
       try {
-        const response: CloudinaryResponse = await this.recipesService.handleUpload(image, createRecipeDto, user)
+        const response: CloudinaryResponse = await this.recipesService.handleUpload(image, /*createRecipeDto,*/formData, user)
         return response.url
       } catch (error) {
         throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
@@ -84,14 +84,20 @@ export class RecipesController {
   @Auth(Role.USER)
   @UsePipes(new ValidationPipe({ transform: true}))
   async update(@Param('id') id: string, @Body() updateRecipeDto: UpdateRecipeDto , @ActiveUser() user: IUserActive): Promise<Recipe> {
-
+    console.log(`Updating recipe with ID: ${id}`);//!
+    console.log(`Recived uupdateRecipeDto: `, updateRecipeDto);
+    
     try {
       const recipe = await this.recipesService.update(id, user, updateRecipeDto);
+      console.log('updated recipe: ', recipe);
+      
       return recipe;
     } catch (error) {
+      console.error('Error updating recipe:', error);
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+
   @ApiBearerAuth()
   @Delete('remove/:id')
   @Auth(Role.USER)
