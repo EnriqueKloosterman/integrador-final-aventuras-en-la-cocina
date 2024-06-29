@@ -7,17 +7,17 @@ export class CreateRecipeDto {
     title: string;
 
     @IsArray()
-    @Transform(({ value }) => value.join('//'))
+    @Transform(({ value }) => value.split('//'))
     description: string;
 
     @IsArray()
     @IsNotEmpty()
-    @Transform(({ value }) => value.join('//'))
+    @Transform(({ value }) => value.split('//'))
     instructions: string;
 
     @IsArray()
     @IsNotEmpty()
-    @Transform(({ value }) => value.join('//'))
+    @Transform(({ value }) => value.split('//'))
     ingredients: string;
 
     @IsString()
