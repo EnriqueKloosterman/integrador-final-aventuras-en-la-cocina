@@ -1,134 +1,131 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RecipesController } from './recipes.controller';
-import { RecipesService } from './recipes.service';
-import { CreateRecipeDto } from './dto/create-recipe.dto';
-import { UpdateRecipeDto } from './dto/update-recipe.dto';
-import { Recipe } from './entities/recipe.entity';
-import { NotFoundException, HttpException, HttpStatus } from '@nestjs/common';
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { Role } from '../common/enums/role.enum';
 
-describe('RecipesController', () => {
-  let controller: RecipesController;
-  let service: RecipesService;
+describe('UsersController', () => {
+  let controller: UsersController;
+  let service: UsersService;
+
+  const mockUser = {
+    userId: '1',
+    userName: 'John',
+    userLastName: 'Doe',
+    userEmail: 'john.doe@example.com',
+    image: 'image_url',
+    user_role: Role.USER,
+  };
+
+  const mockUsersService = {
+    findAll: jest.fn().mockResolvedValue([mockUser]),
+    findOne: jest.fn().mockResolvedValue(mockUser),
+    register: jest.fn().mockResolvedValue(mockUser),
+    update: jest.fn().mockResolvedValue(mockUser),
+    remove: jest.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [RecipesController],
+      controllers: [UsersController],
       providers: [
         {
-          provide: RecipesService,
-          useValue: {
-            create: jest.fn(),
-            update: jest.fn(),
-            remove: jest.fn(),
-            findOne: jest.fn(),
-          },
+          provide: UsersService,
+          useValue: mockUsersService,
         },
       ],
     }).compile();
 
-    controller = module.get<RecipesController>(RecipesController);
-    service = module.get<RecipesService>(RecipesService);
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
+    controller = module.get<UsersController>(UsersController);
+    service = module.get<UsersService>(UsersService);
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('create', () => {
-    const createRecipeDto: CreateRecipeDto = {
-      title: 'Test Recipe',
-      description: ['Description 1', 'Description 2'],
-      instructions: ['Instruction 1', 'Instruction 2'],
-      ingredients: ['Ingredient 1', 'Ingredient 2'],
-      image: 'recipe.jpg',
-      categoryId: 1,
-      userId: 'user-id',
-    };
-
-    it('should create a recipe', async () => {
-      const createdRecipe: Recipe = {
-        articleId: '1', // Assuming `recipeId` is of type string in your `Recipe` entity
-        ...createRecipeDto,
-      };
-
-      jest.spyOn(service, 'create').mockResolvedValue(createdRecipe);
-
-      const result = await controller.create(createRecipeDto);
-
-      expect(result).toEqual(createdRecipe);
+  describe('findAll', () => {
+    it('should return an array of users', async () => {
+      await expect(controller.findAll()).resolves.toEqual([mockUser]);
+      expect(service.findAll).toHaveBeenCalled();
     });
 
-    it('should throw an error if creation fails', async () => {
-      jest.spyOn(service, 'create').mockRejectedValue(new Error('Creation failed'));
+    it('should handle error on findAll', async () => {
+      jest.spyOn(service, 'findAll').mockRejectedValueOnce(new Error('Error finding users'));
+      await expect(controller.findAll()).rejects.toThrow('Error finding users');
+    });
+  });
 
-      await expect(controller.create(createRecipeDto)).rejects.toThrow(HttpException);
+  describe('findOne', () => {
+    it('should return a user', async () => {
+      await expect(controller.findOne('1')).resolves.toEqual(mockUser);
+      expect(service.findOne).toHaveBeenCalledWith(1);
+    });
+
+    it('should handle error on findOne', async () => {
+      jest.spyOn(service, 'findOne').mockRejectedValueOnce(new Error('User not found'));
+      await expect(controller.findOne('1')).rejects.toThrow('User not found');
+    });
+  });
+
+  describe('register', () => {
+    it('should create a user', async () => {
+      const createUserDto: CreateUserDto = {
+        userName: 'John',
+        userLastName: 'Doe',
+        userEmail: 'john.doe@example.com',
+        userPassword: 'password',
+        image: 'image_url',
+      };
+
+      await expect(controller.register(createUserDto)).resolves.toEqual(mockUser);
+      expect(service.register).toHaveBeenCalledWith(createUserDto);
+    });
+
+    it('should handle error on register', async () => {
+      jest.spyOn(service, 'register').mockRejectedValueOnce(new Error('Error creating user'));
+      const createUserDto: CreateUserDto = {
+        userName: 'John',
+        userLastName: 'Doe',
+        userEmail: 'john.doe@example.com',
+        userPassword: 'password',
+        image: 'image_url',
+      };
+
+      await expect(controller.register(createUserDto)).rejects.toThrow('Error creating user');
     });
   });
 
   describe('update', () => {
-    const recipeId = '1';
-    const updateRecipeDto: UpdateRecipeDto = {
-      title: 'Updated Recipe',
-      description: ['Updated Description 1', 'Updated Description 2'],
-      instructions: ['Updated Instruction 1', 'Updated Instruction 2'],
-      ingredients: ['Updated Ingredient 1', 'Updated Ingredient 2'],
-      image: 'updated.jpg',
-      categoryId: 2,
-      userId: 'user-id',
-    };
-
-    it('should update a recipe', async () => {
-      const updatedRecipe: Recipe = {
-        articleId: recipeId, // Assuming `recipeId` is of type string in your `Recipe` entity
-        ...updateRecipeDto,
+    it('should update a user', async () => {
+      const updateUserDto: UpdateUserDto = {
+        userName: 'Jane',
       };
 
-      jest.spyOn(service, 'update').mockResolvedValue(updatedRecipe);
-
-      const result = await controller.update(recipeId, updateRecipeDto);
-
-      expect(result).toEqual(updatedRecipe);
+      await expect(controller.update('1', updateUserDto)).resolves.toEqual(mockUser);
+      expect(service.update).toHaveBeenCalledWith(1, updateUserDto);
     });
 
-    it('should throw an error if update fails', async () => {
-      jest.spyOn(service, 'update').mockRejectedValue(new Error('Update failed'));
+    it('should handle error on update', async () => {
+      jest.spyOn(service, 'update').mockRejectedValueOnce(new Error('Error updating user'));
+      const updateUserDto: UpdateUserDto = {
+        userName: 'Jane',
+      };
 
-      await expect(controller.update(recipeId, updateRecipeDto)).rejects.toThrow(HttpException);
-    });
-
-    it('should throw a NotFoundException if recipe is not found', async () => {
-      jest.spyOn(service, 'update').mockResolvedValue(undefined);
-
-      await expect(controller.update(recipeId, updateRecipeDto)).rejects.toThrow(NotFoundException);
+      await expect(controller.update('1', updateUserDto)).rejects.toThrow('Error updating user');
     });
   });
 
   describe('remove', () => {
-    const recipeId = '1';
-
-    it('should remove a recipe', async () => {
-      jest.spyOn(service, 'remove').mockResolvedValue();
-
-      await controller.remove(recipeId);
-
-      expect(service.remove).toHaveBeenCalledWith(recipeId);
+    it('should remove a user', async () => {
+      await expect(controller.remove('1')).resolves.toBeUndefined();
+      expect(service.remove).toHaveBeenCalledWith(1);
     });
 
-    it('should throw a NotFoundException if recipe is not found', async () => {
-      jest.spyOn(service, 'findOne').mockResolvedValue(undefined);
-
-      await expect(controller.remove(recipeId)).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw an error if service throws', async () => {
-      jest.spyOn(service, 'findOne').mockResolvedValue({} as Recipe);
-      jest.spyOn(service, 'remove').mockRejectedValue(new Error('Service error'));
-
-      await expect(controller.remove(recipeId)).rejects.toThrow(HttpException);
+    it('should handle error on remove', async () => {
+      jest.spyOn(service, 'remove').mockRejectedValueOnce(new Error('Error removing user'));
+      await expect(controller.remove('1')).rejects.toThrow('Error removing user');
     });
   });
 });
