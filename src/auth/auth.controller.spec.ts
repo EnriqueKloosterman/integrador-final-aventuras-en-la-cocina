@@ -19,12 +19,12 @@ describe('AuthController', () => {
           provide: AuthService,
           useValue: {
             handleUpload: jest.fn().mockResolvedValue({ url: 'https://example.com/image.jpg' }),
-            register: jest.fn().mockResolvedValue({} as CreateAuthDto), // Ajustar a los datos esperados por el controlador
+            register: jest.fn().mockResolvedValue({} as CreateAuthDto),
             login: jest.fn().mockResolvedValue({ token: 'mock-jwt-token' }),
-            profile: jest.fn().mockResolvedValue({}), // Ajustar a los datos esperados por el controlador
+            profile: jest.fn().mockResolvedValue({}),
             findAll: jest.fn(),
-            findOne: jest.fn().mockResolvedValue({} as any).mockRejectedValue(new NotFoundException()), // Ajustar a los datos esperados por el controlador
-            update: jest.fn().mockResolvedValue({} as UpdateAuthDto), // Ajustar a los datos esperados por el controlador
+            findOne: jest.fn().mockResolvedValue({} as any).mockRejectedValue(new NotFoundException()),
+            update: jest.fn().mockResolvedValue({} as UpdateAuthDto),
             remove: jest.fn().mockResolvedValue(undefined),
           },
         },
@@ -99,7 +99,7 @@ describe('AuthController', () => {
 
       const result = await controller.profile({ userEmail: 'john.doe@example.com', user_role: Role.USER });
 
-      expect(result).toEqual(mockUser); // Ajustar a los datos esperados por el controlador
+      expect(result).toEqual(mockUser);
     });
   });
 
@@ -115,7 +115,7 @@ describe('AuthController', () => {
 
       const result = await controller.findOne('1');
 
-      expect(result).toEqual(mockUser); // Ajustar a los datos esperados por el controlador
+      expect(result).toEqual(mockUser);
     });
 
     it('should throw a NotFoundException if user not found', async () => {
@@ -133,7 +133,7 @@ describe('AuthController', () => {
 
       const result = await controller.update('1', updateDto);
 
-      expect(result).toEqual(updateDto); // Ajustar a los datos esperados por el controlador
+      expect(result).toEqual(updateDto);
     });
   });
 

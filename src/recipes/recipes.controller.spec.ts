@@ -5,6 +5,15 @@ import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { HttpException } from '@nestjs/common';
 
+interface IUserActive {
+  userId: string;
+  userName: string; 
+  userLastName: string;
+  userEmail: string;
+  image: string;
+  role: string;
+}
+
 describe('RecipesController', () => {
   let controller: RecipesController;
   let service: RecipesService;
@@ -78,8 +87,17 @@ describe('RecipesController', () => {
         userId: 'user1',
       };
 
+      const activeUser: IUserActive = {
+        userId: 'user1',
+        userName: 'John',
+        userLastName: 'Doe',
+        userEmail: 'john.doe@example.com',
+        image: 'user1_image_url',
+        role: 'admin',
+      };
+
       await expect(
-        controller.uploadFile(null, createRecipeDto, { userId: 'user1' })
+        controller.uploadFile(null, createRecipeDto, activeUser)
       ).resolves.toEqual(mockRecipe);
     });
   });
@@ -90,8 +108,17 @@ describe('RecipesController', () => {
         title: 'Updated Recipe',
       };
 
+      const activeUser: IUserActive = {
+        userId: 'user1',
+        userName: 'John',
+        userLastName: 'Doe',
+        userEmail: 'john.doe@example.com',
+        image: 'user1_image_url',
+        role: 'admin',
+      };
+
       await expect(
-        controller.update('1', updateRecipeDto, { userId: 'user1' })
+        controller.update('1', updateRecipeDto, activeUser)
       ).resolves.toEqual(mockRecipe);
     });
   });
@@ -102,3 +129,4 @@ describe('RecipesController', () => {
     });
   });
 });
+
