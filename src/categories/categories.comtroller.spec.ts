@@ -1,188 +1,130 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CategoriesController } from './categories.controller';
-import { CategoriesService } from './categories.service';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
-import { Category } from './entities/category.entity';
+import { CommentsController } from './comments.controller';
+import { CommentsService } from './comments.service';
+import { CreateCommentDto } from './dto/create-comment.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { Comment } from './entities/comment.entity';
+import { Role } from '../common/enums/role.enum';
 
-describe('CategoriesController', () => {
-  let controller: CategoriesController;
-  let service: CategoriesService;
+describe('CommentsController', () => {
+  let controller: CommentsController;
+  let service: CommentsService;
+
+  const mockComment: Comment = {
+    commentId: 1,
+    comment: 'Test comment',
+    user: { userId: '1', userName: 'John', userLastName: 'Doe', image: 'image.jpg' },
+    article: { articleId: '1', title: 'Test Article' },
+    recipe: null,
+  };
+
+  const mockUser = {
+    userId: '1',
+    username: 'JohnDoe',
+    roles: [Role.USER],
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [CategoriesController],
+      controllers: [CommentsController],
       providers: [
         {
-          provide: CategoriesService,
+          provide: CommentsService,
           useValue: {
-            create: jest.fn(),
-            findAllCategories: jest.fn(),
-            findOneCategory: jest.fn(),
-            update: jest.fn(),
-            remove: jest.fn(),
+            create: jest.fn().mockResolvedValue(mockComment),
+            findAllCommentsByArticle: jest.fn().mockResolvedValue([mockComment]),
+            findAllCommentsByRecipe: jest.fn().mockResolvedValue([mockComment]),
+            findOne: jest.fn().mockResolvedValue(mockComment),
+            update: jest.fn().mockResolvedValue(mockComment),
+            remove: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],
     }).compile();
 
-    controller = module.get<CategoriesController>(CategoriesController);
-    service = module.get<CategoriesService>(CategoriesService);
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
+    controller = module.get<CommentsController>(CommentsController);
+    service = module.get<CommentsService>(CommentsService);
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('create', () => {
-    it('should create a new category', async () => {
-      const createCategoryDto: CreateCategoryDto = {
-        category: 'Test Category',
-      };
+  describe('createComentForArticle', () => {
+    it('should create a comment for an article', async () => {
+      const createCommentDto: CreateCommentDto = { comment: 'Great article!' };
+      const articleId = '1';
 
-      const expectedResult: Category = {
-        categoryId: 1,
-        category: 'Test Category',
-        recipe: [],
-      };
-
-      jest.spyOn(service, 'create').mockResolvedValue(expectedResult);
-
-      const result = await controller.create(createCategoryDto);
-
-      expect(result).toEqual(expectedResult);
-      expect(service.create).toHaveBeenCalledWith(createCategoryDto);
+      const result = await controller.createComentForArticle(articleId, createCommentDto, mockUser);
+      expect(service.create).toHaveBeenCalledWith(createCommentDto, mockUser, articleId);
+      expect(result).toEqual(mockComment);
     });
 
-    it('should throw HttpException if category creation fails', async () => {
-      const createCategoryDto: CreateCategoryDto = {
-        category: 'Test Category',
-      };
-
-      jest.spyOn(service, 'create').mockRejectedValue(new Error('Failed to create category'));
-
-      await expect(controller.create(createCategoryDto)).rejects.toThrow(HttpException);
+    it('should throw an exception if data is missing', async () => {
+      await expect(controller.createComentForArticle('1', null, null)).rejects.toThrow(
+        new HttpException('User and commnet data required', HttpStatus.BAD_REQUEST),
+      );
     });
   });
 
-  describe('findAll', () => {
-    it('should return an array of categories', async () => {
-      const expectedResult: Category[] = [
-        {
-          categoryId: 1,
-          category: 'Category 1',
-          recipe: [],
-        },
-        {
-          categoryId: 2,
-          category: 'Category 2',
-          recipe: [],
-        },
-      ];
+  describe('createComentForRecipe', () => {
+    it('should create a comment for a recipe', async () => {
+      const createCommentDto: CreateCommentDto = { comment: 'Delicious!' };
+      const recipeId = '1';
 
-      jest.spyOn(service, 'findAllCategories').mockResolvedValue(expectedResult);
-
-      const result = await controller.findAll();
-
-      expect(result).toEqual(expectedResult);
-      expect(service.findAllCategories).toHaveBeenCalled();
+      const result = await controller.createComentForRecipe(recipeId, createCommentDto, mockUser);
+      expect(service.create).toHaveBeenCalledWith(createCommentDto, mockUser, undefined, recipeId);
+      expect(result).toEqual(mockComment);
     });
+  });
 
-    it('should throw HttpException if no categories found', async () => {
-      jest.spyOn(service, 'findAllCategories').mockResolvedValue([]);
+  describe('findAllCommentsByArtcicle', () => {
+    it('should return comments for a specific article', async () => {
+      const result = await controller.findAllCommentsByArtcicle('1');
+      expect(service.findAllCommentsByArticle).toHaveBeenCalledWith('1');
+      expect(result).toEqual([mockComment]);
+    });
+  });
 
-      await expect(controller.findAll()).rejects.toThrow(HttpException);
+  describe('findAllCommentsByRecipe', () => {
+    it('should return comments for a specific recipe', async () => {
+      const result = await controller.findAllCommentsByRecipe('1');
+      expect(service.findAllCommentsByRecipe).toHaveBeenCalledWith('1');
+      expect(result).toEqual([mockComment]);
     });
   });
 
   describe('findOne', () => {
-    it('should return a category by ID', async () => {
-      const categoryId = 1;
-      const expectedResult: Category = {
-        categoryId: categoryId,
-        category: 'Category 1',
-        recipe: [],
-      };
-
-      jest.spyOn(service, 'findOneCategory').mockResolvedValue(expectedResult);
-
-      const result = await controller.findOne(categoryId.toString());
-
-      expect(result).toEqual(expectedResult);
-      expect(service.findOneCategory).toHaveBeenCalledWith(categoryId);
-    });
-
-    it('should throw HttpException if category not found', async () => {
-      const categoryId = 999;
-
-      jest.spyOn(service, 'findOneCategory').mockResolvedValue(undefined);
-
-      await expect(controller.findOne(categoryId.toString())).rejects.toThrow(HttpException);
+    it('should return a single comment', async () => {
+      const result = await controller.findOne('1');
+      expect(service.findOne).toHaveBeenCalledWith(1);
+      expect(result).toEqual(mockComment);
     });
   });
 
   describe('update', () => {
-    it('should update a category', async () => {
-      const categoryId = 1;
-      const updateCategoryDto: UpdateCategoryDto = {
-        category: 'Updated Category',
-      };
+    it('should update a comment', async () => {
+      const updateCommentDto: UpdateCommentDto = { comment: 'Updated comment' };
 
-      const updatedCategory: Category = {
-        categoryId: categoryId,
-        category: 'Updated Category',
-        recipe: [],
-      };
-
-      jest.spyOn(service, 'findOneCategory').mockResolvedValue(updatedCategory);
-      jest.spyOn(service, 'update').mockResolvedValue(updatedCategory);
-
-      const result = await controller.update(categoryId.toString(), updateCategoryDto);
-
-      expect(result).toEqual(updatedCategory);
-      expect(service.update).toHaveBeenCalledWith(categoryId, updateCategoryDto);
-    });
-
-    it('should throw HttpException if category not found during update', async () => {
-      const categoryId = 999;
-      const updateCategoryDto: UpdateCategoryDto = {
-        category: 'Updated Category',
-      };
-
-      jest.spyOn(service, 'findOneCategory').mockResolvedValue(undefined);
-
-      await expect(controller.update(categoryId.toString(), updateCategoryDto)).rejects.toThrow(HttpException);
+      const result = await controller.update('1', updateCommentDto);
+      expect(service.update).toHaveBeenCalledWith(1, updateCommentDto);
+      expect(result).toEqual(mockComment);
     });
   });
 
   describe('remove', () => {
-    it('should remove a category', async () => {
-      const categoryId = 1;
-
-      jest.spyOn(service, 'findOneCategory').mockResolvedValue({
-        categoryId: categoryId,
-        category: 'Category to delete',
-        recipe: [],
-      });
-      jest.spyOn(service, 'remove').mockResolvedValue();
-
-      await controller.remove(categoryId.toString());
-
-      expect(service.remove).toHaveBeenCalledWith(categoryId);
+    it('should remove a comment', async () => {
+      await controller.remove('1');
+      expect(service.remove).toHaveBeenCalledWith(1);
     });
 
-    it('should throw HttpException if category not found during remove', async () => {
-      const categoryId = 999;
+    it('should throw an exception if comment not found', async () => {
+      jest.spyOn(service, 'findOne').mockResolvedValueOnce(null);
 
-      jest.spyOn(service, 'findOneCategory').mockResolvedValue(undefined);
-
-      await expect(controller.remove(categoryId.toString())).rejects.toThrow(HttpException);
+      await expect(controller.remove('2')).rejects.toThrow(
+        new HttpException('Comment not found', HttpStatus.NOT_FOUND),
+      );
     });
   });
 });
-

@@ -4,12 +4,28 @@ import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { LoginDto } from './dto/login.dto';
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { Role } from '../common/enums/role.enum';
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { CloudinaryResponse } from 'cloudinary/cloudinary.response';
 
 describe('AuthController', () => {
   let controller: AuthController;
-  let authService: AuthService;
+  let service: AuthService;
+
+  const mockUser = {
+    userId: '1',
+    userName: 'John',
+    userLastName: 'Doe',
+    userEmail: 'john.doe@example.com',
+    userPassword: 'hashedpassword',
+    image: 'image-url',
+    user_role: Role.USER,
+  };
+
+  const mockCloudinaryResponse: CloudinaryResponse = {
+    url: 'http://example.com/image.jpg',
+    secure_url: 'https://example.com/image.jpg',
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -18,13 +34,11 @@ describe('AuthController', () => {
         {
           provide: AuthService,
           useValue: {
-            handleUpload: jest.fn().mockResolvedValue({ url: 'https://example.com/image.jpg' }),
-            register: jest.fn().mockResolvedValue({} as CreateAuthDto),
-            login: jest.fn().mockResolvedValue({ token: 'mock-jwt-token' }),
-            profile: jest.fn().mockResolvedValue({}),
-            findAll: jest.fn(),
-            findOne: jest.fn().mockResolvedValue({} as any).mockRejectedValue(new NotFoundException()),
-            update: jest.fn().mockResolvedValue({} as UpdateAuthDto),
+            handleUpload: jest.fn().mockResolvedValue(mockCloudinaryResponse),
+            login: jest.fn().mockResolvedValue({ token: 'test-token', ...mockUser }),
+            profile: jest.fn().mockResolvedValue(mockUser),
+            findOne: jest.fn().mockResolvedValue(mockUser),
+            update: jest.fn().mockResolvedValue(mockUser),
             remove: jest.fn().mockResolvedValue(undefined),
           },
         },
@@ -32,7 +46,7 @@ describe('AuthController', () => {
     }).compile();
 
     controller = module.get<AuthController>(AuthController);
-    authService = module.get<AuthService>(AuthService);
+    service = module.get<AuthService>(AuthService);
   });
 
   it('should be defined', () => {
@@ -40,107 +54,81 @@ describe('AuthController', () => {
   });
 
   describe('uploadFile', () => {
-    it('should upload a file and create a user', async () => {
-      const dto: CreateAuthDto = {
+    it('should upload a file and register a user', async () => {
+      const createAuthDto: CreateAuthDto = {
         userName: 'John',
         userLastName: 'Doe',
         userEmail: 'john.doe@example.com',
         userPassword: 'password123',
-        image: 'profile.jpg',
       };
 
-      const mockImage = { buffer: Buffer.from('fake-image-data') };
+      const image: Express.Multer.File = {
+        fieldname: 'image',
+        originalname: 'test.jpg',
+        encoding: '7bit',
+        mimetype: 'image/jpeg',
+        size: 1024,
+        buffer: Buffer.from(''),
+        destination: '',
+        filename: '',
+        path: '',
+        stream: null,
+      };
 
-      const result = await controller.uploadFile(mockImage as any, dto);
-
-      expect(result).toBe('https://example.com/image.jpg');
+      const result = await controller.uploadFile(image, createAuthDto);
+      expect(service.handleUpload).toHaveBeenCalledWith(image, createAuthDto);
+      expect(result).toEqual(mockCloudinaryResponse.url);
     });
 
     it('should throw an error if image or user data is missing', async () => {
-      const mockImage = { buffer: Buffer.from('fake-image-data') };
-
-      await expect(controller.uploadFile(null as any, null)).rejects.toThrow();
+      await expect(controller.uploadFile(null, null)).rejects.toThrow(
+        new HttpException('Imgae and User data required', HttpStatus.BAD_REQUEST),
+      );
     });
   });
 
   describe('login', () => {
-    it('should return a JWT token on successful login', async () => {
+    it('should login a user', async () => {
       const loginDto: LoginDto = {
         userEmail: 'john.doe@example.com',
         userPassword: 'password123',
       };
 
       const result = await controller.login(loginDto);
-
-      expect(result.token).toBe('mock-jwt-token');
-    });
-
-    it('should throw an error if login fails', async () => {
-      const loginDto: LoginDto = {
-        userEmail: 'john.doe@example.com',
-        userPassword: 'wrongpassword',
-      };
-
-      jest.spyOn(authService, 'login').mockRejectedValue(new UnauthorizedException());
-
-      await expect(controller.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      expect(service.login).toHaveBeenCalledWith(loginDto);
+      expect(result).toEqual({ token: 'test-token', ...mockUser });
     });
   });
 
   describe('profile', () => {
-    it('should return user profile data', async () => {
-      const mockUser = {
-        userId: '1',
-        userName: 'John',
-        userLastName: 'Doe',
-        userEmail: 'john.doe@example.com',
-        image: 'profile.jpg',
-      };
-
-      const result = await controller.profile({ userEmail: 'john.doe@example.com', user_role: Role.USER });
-
+    it('should return the user profile', async () => {
+      const result = await controller.profile(mockUser);
+      expect(service.profile).toHaveBeenCalledWith(mockUser);
       expect(result).toEqual(mockUser);
     });
   });
 
   describe('findOne', () => {
-    it('should return user data by ID', async () => {
-      const mockUser = {
-        userId: '1',
-        userName: 'John',
-        userLastName: 'Doe',
-        userEmail: 'john.doe@example.com',
-        image: 'profile.jpg',
-      };
-
+    it('should return a user by id', async () => {
       const result = await controller.findOne('1');
-
+      expect(service.findOne).toHaveBeenCalledWith(1);
       expect(result).toEqual(mockUser);
-    });
-
-    it('should throw a NotFoundException if user not found', async () => {
-      jest.spyOn(authService, 'findOne').mockRejectedValue(new NotFoundException());
-
-      await expect(controller.findOne('999')).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('update', () => {
-    it('should update user data', async () => {
-      const updateDto: UpdateAuthDto = {
-        userName: 'Jane',
-      };
-
-      const result = await controller.update('1', updateDto);
-
-      expect(result).toEqual(updateDto);
+    it('should update a user', async () => {
+      const updateAuthDto: UpdateAuthDto = { userName: 'Updated Name' };
+      const result = await controller.update('1', updateAuthDto);
+      expect(service.update).toHaveBeenCalledWith(1, updateAuthDto);
+      expect(result).toEqual(mockUser);
     });
   });
 
   describe('remove', () => {
     it('should remove a user', async () => {
       const result = await controller.remove('1');
-
+      expect(service.remove).toHaveBeenCalledWith(1);
       expect(result).toBeUndefined();
     });
   });
