@@ -6,6 +6,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ActiveUser } from '../common/decorators/active.user.decorator';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from '../common/enums/role.enum';
+import { IUserActive } from 'src/common/inteface/user-active.interface';
 
 @ApiTags('Comments')
 @Controller('comments')
@@ -68,13 +69,19 @@ export class CommentsController {
   @Delete('remove/:id')
   @Auth(Role.USER)
   @UsePipes(new ValidationPipe({ transform: true }))
-  async remove(@Param('id') id: string): Promise<void> {
+  async remove(
+    @Param('id') id: string,
+    @ActiveUser() user: IUserActive 
+  ): Promise<void> {
     try {
       const comment = await this.commentsService.findOne(+id);
-      if(!comment) throw new HttpException('Comment not found', HttpStatus.NOT_FOUND)
+      if (!comment) {
+        throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
+      }
+
       await this.commentsService.remove(+id);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 }

@@ -79,6 +79,7 @@ export class CommentsService {
       user: {
         name: comment.user.userName,
         lastName: comment.user.userLastName,
+        userEmail: comment.user.userEmail,
         image: comment.user.image
       }
     }));
@@ -105,6 +106,8 @@ export class CommentsService {
     comment: comment.comment,
     user: {
       name: comment.user.userName,
+      lastName: comment.user.userLastName,
+      userEmail: comment.user.userEmail,
       image: comment.user.image
     }
   }));

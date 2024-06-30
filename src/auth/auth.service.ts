@@ -93,6 +93,7 @@ export class AuthService {
       userLastName: user.userLastName,
       image: user.image,
       userEmail: user.userEmail,
+      user_role: user.user_role
     }
   }
 
