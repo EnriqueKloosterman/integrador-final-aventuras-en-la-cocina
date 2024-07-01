@@ -5,7 +5,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { Comment } from './entities/comment.entity';
-import { IUserActive } from '../common/inteface/user-active.interface';
+import { IUserActive } from '../common/interface/user-active.interface'; // Ruta ajustada
 
 describe('CommentsController', () => {
   let controller: CommentsController;
@@ -15,7 +15,14 @@ describe('CommentsController', () => {
     commentId: 1,
     comment: 'This is a test comment',
     user: { userId: '1', userName: 'John', userLastName: 'Doe', image: 'image.jpg' },
-    article: { articleId: '1', title: 'Test Article' },
+    article: { 
+      articleId: '1', 
+      title: 'Test Article', 
+      article: '', 
+      image: '', 
+      tag: { tagId: '', tagName: '' }, 
+      user: { userId: '', username: '' } 
+    },
     recipe: null,
   };
 
@@ -62,7 +69,7 @@ describe('CommentsController', () => {
 
     it('should throw an exception if data is missing', async () => {
       await expect(controller.createComentForArticle('1', null, null)).rejects.toThrow(
-        new HttpException('User and commnet data required', HttpStatus.BAD_REQUEST),
+        new HttpException('User and comment data required', HttpStatus.BAD_REQUEST),
       );
     });
   });

@@ -5,7 +5,7 @@ import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { Article } from './entities/article.entity';
-import { IUserActive } from '../common/inteface/user-active.interface';
+import { IUserActive } from '../common/interface/user-active.interface';
 
 describe('ArticlesController', () => {
   let controller: ArticlesController;
@@ -54,12 +54,12 @@ describe('ArticlesController', () => {
 
   describe('uploadFile', () => {
     it('should upload an article with an image', async () => {
-      const createArticleDto: CreateArticleDto = { title: 'Test', article: {}, tagId: '1' };
+      const createArticleDto: CreateArticleDto = { title: 'Test', article: '{}', tagId: '1' };
       const image = { buffer: Buffer.from('test') } as Express.Multer.File;
 
       const result = await controller.uploadFile(image, createArticleDto, mockUser);
       expect(service.handleUpload).toHaveBeenCalledWith(image, createArticleDto, mockUser);
-      expect(result).toEqual('http://example.com/image.jpg');
+      expect(result).toEqual({ url: 'http://example.com/image.jpg' });
     });
 
     it('should throw an exception if image or data is missing', async () => {
@@ -103,7 +103,7 @@ describe('ArticlesController', () => {
 
   describe('update', () => {
     it('should update an article', async () => {
-      const updateArticleDto: UpdateArticleDto = { title: 'Updated Title', article: {}, tagId: '1' };
+      const updateArticleDto: UpdateArticleDto = { title: 'Updated Title', article: '{}', tagId: '1' };
 
       const result = await controller.update('1', updateArticleDto, mockUser);
       expect(service.update).toHaveBeenCalledWith('1', mockUser, updateArticleDto);

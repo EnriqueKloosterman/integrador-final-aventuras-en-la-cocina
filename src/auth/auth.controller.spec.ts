@@ -25,6 +25,9 @@ describe('AuthController', () => {
   const mockCloudinaryResponse: CloudinaryResponse = {
     url: 'http://example.com/image.jpg',
     secure_url: 'https://example.com/image.jpg',
+    message: 'Mock message',
+    name: 'Mock name',
+    http_code: 200,
   };
 
   beforeEach(async () => {
@@ -60,6 +63,7 @@ describe('AuthController', () => {
         userLastName: 'Doe',
         userEmail: 'john.doe@example.com',
         userPassword: 'password123',
+        image: 'image-url', // Asegúrate de incluir la propiedad `image`
       };
 
       const image: Express.Multer.File = {
@@ -82,7 +86,7 @@ describe('AuthController', () => {
 
     it('should throw an error if image or user data is missing', async () => {
       await expect(controller.uploadFile(null, null)).rejects.toThrow(
-        new HttpException('Imgae and User data required', HttpStatus.BAD_REQUEST),
+        new HttpException('Image and User data required', HttpStatus.BAD_REQUEST),
       );
     });
   });
