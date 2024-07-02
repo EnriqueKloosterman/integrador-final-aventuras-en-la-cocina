@@ -78,7 +78,7 @@ export class RecipesController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
     }
   }
-  //TODO: testear el update
+
   @ApiBearerAuth()
   @Patch('update/recipe/:id')
   @Auth(Role.USER)
