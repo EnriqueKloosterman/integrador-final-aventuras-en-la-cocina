@@ -26,7 +26,6 @@ export class RecipesService {
         (error, result) => {
           if(error) return reject(error)
           if(result && result.url){
-            console.log('image uploaded succesfully. URL: ', result.url);
             this.create(createRecipeDto, user, result.url)
             .then(() =>{
               resolve(result)
@@ -35,7 +34,6 @@ export class RecipesService {
               reject(error)
             })
           } else {
-            console.log('image upload failed. Error: ', error);
             reject(new Error('Upload failed'))            
           }
         }
@@ -76,7 +74,6 @@ export class RecipesService {
         throw new BadRequestException('Ingredients must be an array of strings');
       }
     } catch (error) {
-      console.error('Error parsing JSON fields:', error);
       throw new BadRequestException('Invalid JSON format');
     }
     if (typeof imageUrl !== 'string' || !imageUrl.trim()) {
@@ -90,7 +87,6 @@ export class RecipesService {
       await this.recipeRepository.save(newRecipe);
       return newRecipe;
     } catch (error) {
-      console.error('Error saving recipe:', error);
       throw new BadRequestException('Recipe not saved');
     }
   }

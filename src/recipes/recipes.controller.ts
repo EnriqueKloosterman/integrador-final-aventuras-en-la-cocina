@@ -84,16 +84,11 @@ export class RecipesController {
   @Auth(Role.USER)
   @UsePipes(new ValidationPipe({ transform: true}))
   async update(@Param('id') id: string, @Body() updateRecipeDto: UpdateRecipeDto , @ActiveUser() user: IUserActive): Promise<Recipe> {
-    console.log(`Updating recipe with ID: ${id}`);//!
-    console.log(`Recived uupdateRecipeDto: `, updateRecipeDto);
     
     try {
       const recipe = await this.recipesService.update(id, user, updateRecipeDto);
-      console.log('updated recipe: ', recipe);
-      
       return recipe;
     } catch (error) {
-      console.error('Error updating recipe:', error);
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }

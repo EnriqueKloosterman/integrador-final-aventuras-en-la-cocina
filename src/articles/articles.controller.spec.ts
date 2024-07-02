@@ -5,7 +5,7 @@ import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { Article } from './entities/article.entity';
-import { IUserActive } from '../common/interface/user-active.interface';
+import { IUserActive } from '../common/inteface/user-active.interface';
 
 describe('ArticlesController', () => {
   let controller: ArticlesController;
@@ -22,7 +22,7 @@ describe('ArticlesController', () => {
 
   const mockUser: IUserActive = {
     userId: '1',
-    username: 'user1',
+    userName: 'user1',
   };
 
   beforeEach(async () => {

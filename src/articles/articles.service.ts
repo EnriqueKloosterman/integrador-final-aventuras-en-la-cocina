@@ -35,7 +35,6 @@ export class ArticlesService {
         (error, result) => {
           if (error) return reject(error);
           if (result && result.url) {
-            console.log('image uploaded succesfully. URL: ', result.url);
             this.create(createArticleDto, user, result.url)
               .then(() => {
                 resolve(result);
@@ -44,7 +43,7 @@ export class ArticlesService {
                 reject(error);
               });
           } else {
-            console.log('image upload failed. Error: ', error);
+
             reject(new Error('Upload failed'));
           }
         },
@@ -78,7 +77,6 @@ export class ArticlesService {
     try {
       await this.articleRpository.save(newArticle);
     } catch (error) {
-      console.log(error);
       throw new Error('Arcticle creation failed');
     }
   }

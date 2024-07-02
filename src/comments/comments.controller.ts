@@ -40,9 +40,7 @@ export class CommentsController {
     try {
       const newComment = await this.commentsService.create(createCommentDto, user, undefined, recipeId);
       return newComment 
-    } catch (error) {
-      console.log(error);
-      
+    } catch (error) {      
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
     }
   }

@@ -20,10 +20,8 @@ export class AuthService {
       return new Promise<CloudinaryResponse>((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream((error, result) => {
           if (error) {
-            console.error('Image upload failed. Error:', error);
             reject(error);
           } else {
-            console.log('Image uploaded successfully. URL:', result.url);
             this.register(createAuthDto.userName, createAuthDto.userLastName, createAuthDto.userEmail, createAuthDto.userPassword, result.url)
               .then(() => resolve(result))
               .catch((error) => reject(error));
@@ -33,7 +31,6 @@ export class AuthService {
         uploadStream.end(image.buffer);
       });
     } catch (error) {
-      console.error('Error handling image upload:', error);
       throw new Error('Image upload failed');
     }
   }
@@ -62,7 +59,6 @@ export class AuthService {
         imageUrl
       };
     } catch (error) {
-      console.error('Error registering user:', error);
       throw new InternalServerErrorException('User registration failed');
     }
   }
